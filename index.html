@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Gastos Semanais</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMDAiIGZpbGw9IiMwZjE3MmEiLz4KICA8cmVjdCB4PSI5MCIgeT0iMzEwIiB3aWR0aD0iNzAiIGhlaWdodD0iMTMwIiByeD0iMTAiIGZpbGw9IiMyMmM1NWUiLz4KICA8cmVjdCB4PSIxODAiIHk9IjI2MCIgd2lkdGg9IjcwIiBoZWlnaHQ9IjE4MCIgcng9IjEwIiBmaWxsPSIjMzhiZGY4Ii8+CiAgPHJlY3QgeD0iMjcwIiB5PSIyMDAiIHdpZHRoPSI3MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMCIgZmlsbD0iIzIyYzU1ZSIvPgogIDxyZWN0IHg9IjM2MCIgeT0iMTMwIiB3aWR0aD0iNzAiIGhlaWdodD0iMzEwIiByeD0iMTAiIGZpbGw9IiMzOGJkZjgiLz4KPC9zdmc+">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAMX0lEQVR4nO3dMZIT1wKGUY2LnMABa4DQ5ZU49AIJWQlFCGsgIPAKcPBKfoNgYCR19+2+3zkLgL5Tqvk/XQ3Dw4mfevnqzdfRzwDAbf75/PFh9DPslS/MycgDFNXjIHl4gw/ApVoQJA5r8AG41uxBMO3hjD4AS5kxBqY6kNEHYG2zxMAUhzD8AGzt6CFw6Ic3/ACMdtQQOORDG34A9uZoIXCohzX8AOzdUULgEA9p+AE4mr2HwK4fzvADcHR7DYHfRj/AU4w/ADPY657trkr2+oUCgHvt6TZgVzcAxh+Ame1p53ZRInv6ggDAFkbfBgy/ATD+ABSN3r+hATD68AAw0sgdHHL9YPgB4FtbfySw+Q2A8QeA7229j5sGgPEHgKdtuZObBYDxB4Bf22ovNwkA4w8Az7fFbq4eAMYfAK639n6uGgDGHwBut+aOrhYAxh8A7rfWnq4SAMYfAJazxq4uHgDGHwCWt/S+LhoAxh8A1rPkzi4WAMYfANa31N4O/98AAYDtLRIA3v0DwHaW2N27A8D4A8D27t3fuwLA+APAOPfssJ8BAICgmwPAu38AGO/WPb4pAIw/AOzHLbvsIwAACLo6ALz7B4D9uXafrwoA4w8A+3XNTvsIAACCnh0A3v0DwP49d6/dAABA0LMCwLt/ADiO5+y2GwAACPplAHj3DwDH86v9dgMAAEE/DQDv/gHguH62424AACDoyQDw7h8Aju+pPXcDAABBPwwA7/4BYB4/2nU3AAAQJAAAIOi7AHD9DwDzudx3NwAAECQAACDomwBw/Q8A83q8824AACBIAABAkAAAgKD/AsDn/wAwv/PeuwEAgCABAABBAgAAgh5OJ5//A0CNGwAACBIAABAkAAAgSAAAQJAAAIAgAQAAQb/5J4AA0OMGAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABL0Y/QAAI71++2H0I9zt099/jH4EDujh5as3X0c/BMDWZhj+S0KAa/gIAMiZcfxPp3nPxToEAJAy+0jOfj6WIwCAjMo4Vs7JfQQAAAQJAGjt3VXvgzW3AgICBAABBAgAAggQAAAQJAAAIEgAAECQAACAIAEAAEECAACCBAAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBLREAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQNCL0Q8wg9/f/Tn6Ee725a/3ox8BgA0JgDvMMPxn57MIAYAGHwHcaKbxf2zWcwHwLQFwg9lHcvbzASAArlYZx8o5AaoEAAAECYAr1N4V184LUCIAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABAkAAAgCABAABBAgAAggQAAAQJAAAIEgAAECQAACBIAABA0IvRDwCv334Y/Qh3+/T3H6MfAeAqAoBhZhj+s/NZhABwFD4CYIiZxv+xWc8FzEcAsLnZR3L28wFzEABsqjKOlXMCxyUAACBIALCZ2rvi2nmBYxEAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAACBIAABAkAAAgSAAAQJAAAIAgAQAAQQIAAIIEAAAECQAA"
+>
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gastos Semanais">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<style>
+  :root {
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card2: #273449;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #334155;
+    --accent: #38bdf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-title { font-size: 17px; font-weight: 700; color: var(--accent); }
+  .header-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn-icon { background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); padding: 6px 10px; font-size: 18px; cursor: pointer; }
+  .btn-icon:active { background: var(--border); }
+
+  /* WEEK NAV */
+  .week-nav { background: var(--card); padding: 12px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+  .week-nav select { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 14px; }
+  .btn-new-week { background: var(--accent); color: #0f172a; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+  /* SALDO POSITIVO */
+  .saldo-box { margin: 14px 16px 0; background: var(--card); border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border); }
+  .saldo-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .saldo-box-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .saldo-entries { display: flex; flex-direction: column; gap: 6px; }
+  .saldo-entry { display: flex; align-items: center; gap: 8px; }
+  .saldo-entry input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 10px; font-size: 14px; }
+  .saldo-entry-label { font-size: 12px; color: var(--muted); min-width: 40px; }
+  .saldo-total { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .saldo-total-label { font-size: 13px; color: var(--muted); }
+  .saldo-total-value { font-size: 18px; font-weight: 800; color: var(--green); }
+  .btn-small { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); padding: 4px 8px; font-size: 12px; cursor: pointer; }
+  .btn-small:active { background: var(--border); }
+
+  /* CARRYOVER BADGE */
+  .carryover-badge { margin: 8px 16px 0; border-radius: 8px; padding: 8px 12px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .carryover-badge.positive { background: #14532d55; border: 1px solid #22c55e44; color: var(--green); }
+  .carryover-badge.negative { background: #7f1d1d55; border: 1px solid #ef444444; color: var(--red); }
+
+  /* CATEGORIES */
+  .section-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 16px 16px 8px; }
+
+  .cat-card { margin: 0 16px 10px; background: var(--card); border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border); }
+  .cat-card.over { border-color: #ef444466; }
+  .cat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cat-name { font-size: 15px; font-weight: 700; }
+  .cat-balance { font-size: 17px; font-weight: 800; }
+  .cat-balance.ok { color: var(--green); }
+  .cat-balance.warn { color: var(--yellow); }
+  .cat-balance.over { color: var(--red); }
+  .cat-limit-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .cat-limit-label { font-size: 12px; color: var(--muted); }
+  .cat-limit-input { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 4px 8px; font-size: 13px; width: 90px; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+  .progress-fill.ok { background: var(--green); }
+  .progress-fill.warn { background: var(--yellow); }
+  .progress-fill.over { background: var(--red); width: 100% !important; }
+
+  /* EXPENSE LIST */
+  .expense-list { display: flex; flex-direction: column; gap: 4px; }
+  .expense-item { display: flex; align-items: center; gap: 8px; background: var(--card2); border-radius: 6px; padding: 6px 10px; }
+  .expense-desc { flex: 1; font-size: 13px; color: var(--text); }
+  .expense-val { font-size: 13px; font-weight: 600; color: var(--red); white-space: nowrap; }
+  .expense-del { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; }
+  .expense-del:active { color: var(--red); }
+  .btn-add-expense { width: 100%; margin-top: 8px; background: none; border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); padding: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-add-expense:active { background: var(--card2); }
+
+  /* TOTAL */
+  .total-card { margin: 0 16px 10px; background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); }
+  .total-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; }
+  .total-row-label { font-size: 13px; color: var(--muted); }
+  .total-row-value { font-size: 14px; font-weight: 600; }
+  .total-divider { height: 1px; background: var(--border); margin: 8px 0; }
+  .total-final { display: flex; justify-content: space-between; align-items: center; }
+  .total-final-label { font-size: 15px; font-weight: 700; }
+  .total-final-value { font-size: 22px; font-weight: 900; }
+
+  /* SHARE SECTION */
+  .share-section { margin: 0 16px 24px; display: flex; gap: 8px; }
+  .btn-share { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--accent); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-share:active { background: var(--card2); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: #00000099; z-index: 200; display: flex; align-items: flex-end; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--card); border-radius: 20px 20px 0 0; padding: 20px 16px 32px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+  .modal label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; }
+  .modal input[type="date"] { color-scheme: dark; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-primary { flex: 1; background: var(--accent); color: #0f172a; border: none; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .btn-cancel { flex: 1; background: none; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); padding: 13px; font-size: 15px; cursor: pointer; }
+
+  /* NEW WEEK MODAL */
+  .nw-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .nw-row > div { flex: 1; }
+  .nw-row label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .nw-row input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px 10px; font-size: 14px; }
+
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-left: 6px; }
+  .badge-week { background: #1e3a5f; color: var(--accent); }
+
+  .empty-state { text-align: center; padding: 20px; color: var(--muted); font-size: 14px; }
+
+  @media (min-width: 500px) {
+    .modal { max-width: 480px; margin: 0 auto; border-radius: 20px; align-self: center; }
+    .modal-overlay { align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA DE SETUP FIREBASE -->
+<div id="firebase-setup" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:32px 20px">
+  <div style="max-width:480px;margin:0 auto">
+    <div style="font-size:28px;margin-bottom:8px">🔥</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:8px">Configurar Firebase</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Para sincronizar os dados entre você e a Andreza em tempo real, cole abaixo o <strong style="color:var(--text)">objeto de configuração</strong> do seu projeto Firebase.
+    </p>
+    <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8;border:1px solid var(--border)">
+      <strong style="color:var(--accent)">Como obter:</strong><br>
+      1. Acesse <strong style="color:var(--text)">console.firebase.google.com</strong><br>
+      2. Clique em <strong style="color:var(--text)">Adicionar projeto</strong><br>
+      3. Dê um nome (ex: gastos-semanais) e finalize<br>
+      4. Clique em <strong style="color:var(--text)">&lt;/&gt; Web</strong> para registrar o app<br>
+      5. Copie o objeto <strong style="color:var(--text)">firebaseConfig</strong><br>
+      6. Em <strong style="color:var(--text)">Build → Realtime Database</strong>, crie o banco e deixe as regras como <strong style="color:var(--text)">true</strong> por enquanto
+    </div>
+    <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Cole o firebaseConfig aqui:</label>
+    <textarea id="fb-config-input" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'
+      style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:12px;font-size:12px;height:160px;resize:none;font-family:monospace"></textarea>
+    <div id="fb-setup-error" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
+    <button onclick="saveFirebaseConfig()" style="width:100%;margin-top:16px;background:var(--accent);color:#0f172a;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer">
+      Conectar e abrir app
+    </button>
+    <button onclick="usarSemFirebase()" style="width:100%;margin-top:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:12px;font-size:14px;cursor:pointer">
+      Usar sem sincronização (local)
+    </button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-title">💸 Gastos Semanais</div>
+    <div class="header-sub" id="week-range-header">—</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span id="sync-status" style="font-size:11px;color:var(--muted)"></span>
+    <div onclick="togglePin()" title="Fixar semana atual" style="cursor:pointer;display:flex;align-items:center;gap:5px">
+      <span style="font-size:11px;color:var(--muted)">Fixar</span>
+      <div id="pin-btn" style="width:38px;height:22px;border-radius:11px;background:var(--border);position:relative;transition:background .2s">
+        <div id="pin-knob" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px #0004"></div>
+      </div>
+    </div>
+    <button class="btn-icon" onclick="openEditWeekModal()" title="Editar semana">✏️</button>
+    <button class="btn-icon" onclick="deleteCurrentWeek()" title="Apagar semana" style="color:#ef4444">🗑️</button>
+    <button class="btn-icon" onclick="openFirebaseSetup()" title="Configurações">⚙️</button>
+  </div>
+</div>
+
+<!-- WEEK NAV -->
+<div class="week-nav" style="flex-direction:column;gap:8px;align-items:stretch">
+  <div style="display:flex;gap:8px">
+    <select id="cycle-filter" onchange="renderWeekSelect()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:13px">
+      <option value="">Todos os ciclos</option>
+    </select>
+    <button class="btn-new-week" onclick="openNewWeekModal()">+ Semana</button>
+  </div>
+  <select id="week-select" onchange="loadWeek(this.value)">
+    <option value="">Nenhuma semana criada</option>
+  </select>
+</div>
+
+<div id="main-content">
+  <div class="empty-state" style="margin-top:60px">
+    <div style="font-size:48px;margin-bottom:12px">📅</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px">Nenhuma semana criada</div>
+    <div>Toque em <strong>+ Semana</strong> para começar</div>
+  </div>
+</div>
+
+<!-- MODAL: NOVA SEMANA -->
+<div class="modal-overlay hidden" id="modal-new-week">
+  <div class="modal">
+    <div class="modal-title">Nova Semana</div>
+
+    <label>Ciclo (mês/ano de referência)</label>
+    <input type="month" id="nw-cycle" onchange="autoFillWeekName()" style="color-scheme:dark;margin-bottom:10px">
+
+    <label>Número da semana no ciclo</label>
+    <select id="nw-num" onchange="autoFillWeekName()">
+      <option value="1">Semana 1</option>
+      <option value="2">Semana 2</option>
+      <option value="3">Semana 3</option>
+      <option value="4">Semana 4</option>
+      <option value="5">Semana 5</option>
+    </select>
+
+    <div class="nw-row" style="margin-top:12px">
+      <div>
+        <label>📅 Início (sexta-feira)</label>
+        <input type="date" id="nw-start" onchange="autoFillWeekName()">
+      </div>
+      <div>
+        <label>📅 Término (quinta-feira)</label>
+        <input type="date" id="nw-end" onchange="autoFillWeekName()">
+      </div>
+    </div>
+
+    <label>Nome gerado</label>
+    <input type="text" id="nw-name" placeholder="Será preenchido automaticamente">
+
+    <label style="margin-top:14px;font-weight:700;font-size:14px;color:var(--text)">Limites por categoria (R$)</label>
+    <div class="nw-row">
+      <div><label>Supermercado</label><input type="number" id="nw-l0" value="800"></div>
+      <div><label>Roupas</label><input type="number" id="nw-l1" value="300"></div>
+    </div>
+    <div class="nw-row">
+      <div><label>Saída Top</label><input type="number" id="nw-l2" value="125"></div>
+      <div><label>Lazer Simples</label><input type="number" id="nw-l3" value="100"></div>
+    </div>
+    <div class="nw-row">
+      <div><label>Margem de Manobra</label><input type="number" id="nw-l4" value="215"></div>
+    </div>
+    <div id="carryover-info" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-new-week')">Cancelar</button>
+      <button class="btn-primary" onclick="createWeek()">Criar semana</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADICIONAR ENTRADA DE SALDO -->
+<div class="modal-overlay hidden" id="modal-add-saldo">
+  <div class="modal">
+    <div class="modal-title">Adicionar Entrada</div>
+    <label>Valor (R$)</label>
+    <input type="number" id="as-value" placeholder="0,00" inputmode="decimal">
+    <label>Descrição</label>
+    <input type="text" id="as-desc" placeholder="Ex: Salário Nubank, Pix Paula...">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-add-saldo')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmAddSaldo()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADICIONAR GASTO -->
+<div class="modal-overlay hidden" id="modal-add-expense">
+  <div class="modal">
+    <div class="modal-title">Adicionar Gasto</div>
+    <label>Categoria</label>
+    <select id="ae-cat"></select>
+    <label>Valor (R$)</label>
+    <input type="number" id="ae-value" placeholder="0,00" inputmode="decimal">
+    <label>Descrição</label>
+    <input type="text" id="ae-desc" placeholder="Ex: Pão de Açúcar, W Carnes...">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-add-expense')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmAddExpense()">Lançar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDITAR SEMANA -->
+<div class="modal-overlay hidden" id="modal-edit-week">
+  <div class="modal">
+    <div class="modal-title">✏️ Editar Semana</div>
+    <label>Ciclo (mês/ano de referência)</label>
+    <input type="month" id="ew-cycle" style="color-scheme:dark;margin-bottom:10px">
+    <label>Nome da semana</label>
+    <input type="text" id="ew-name" placeholder="Ex: Semana 01 - 13/06 a 19/06">
+    <label>Número da semana no ciclo</label>
+    <select id="ew-num">
+      <option value="1">Semana 1</option>
+      <option value="2">Semana 2</option>
+      <option value="3">Semana 3</option>
+      <option value="4">Semana 4</option>
+      <option value="5">Semana 5</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-week')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmEditWeek()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDITAR MARGENS -->
+<div class="modal-overlay hidden" id="modal-edit-limits">
+  <div class="modal">
+    <div class="modal-title">⚙️ Editar Margens</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Ajuste os limites de cada categoria para esta semana.</p>
+    <div class="nw-row">
+      <div><label>🛒 Supermercado</label><input type="number" id="el-l0"></div>
+      <div><label>👕 Roupas</label><input type="number" id="el-l1"></div>
+    </div>
+    <div class="nw-row">
+      <div><label>✨ Saída Top</label><input type="number" id="el-l2"></div>
+      <div><label>🎉 Lazer Simples</label><input type="number" id="el-l3"></div>
+    </div>
+    <div class="nw-row">
+      <div><label>🔧 Margem de Manobra</label><input type="number" id="el-l4"></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+        <span id="el-total-label" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-limits')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmEditLimits()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EXPORTAR PARA GEMINI -->
+<div class="modal-overlay hidden" id="modal-export">
+  <div class="modal">
+    <div class="modal-title">🤖 Exportar para Gemini</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Copie o texto abaixo e cole na sua conversa fixa com o Gemini.</p>
+    <textarea id="export-text" readonly style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:12px;height:220px;resize:none;line-height:1.5"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-export')">Fechar</button>
+      <button class="btn-primary" onclick="copyExportText()">📋 Copiar texto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RELATÓRIO DO CICLO -->
+<div class="modal-overlay hidden" id="modal-cycle-report">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-title">📊 Relatório do Ciclo</div>
+    <label>Selecione as semanas do ciclo</label>
+    <div id="cycle-week-checkboxes" style="display:flex;flex-direction:column;gap:8px;margin:10px 0"></div>
+    <div id="cycle-report-content" style="margin-top:16px"></div>
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="btn-cancel" onclick="closeModal('modal-cycle-report')">Fechar</button>
+      <button class="btn-primary" onclick="exportCycleToGemini()">🤖 Exportar Ciclo p/ Gemini</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: COMPARTILHAR -->
+<div class="modal-overlay hidden" id="modal-share">
+  <div class="modal">
+    <div class="modal-title">📤 Compartilhar</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Copie o link abaixo e envie pelo WhatsApp para a Andreza. Quem abrir o link carrega o estado atual do app.</p>
+    <textarea id="share-url" readonly style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:12px;height:80px;resize:none"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-share')">Fechar</button>
+      <button class="btn-primary" onclick="copyShareUrl()">📋 Copiar link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const CAT_NAMES = ['Supermercado/Saúde','Roupas','Saída Top','Lazer Simples','Margem de Manobra'];
+const CAT_EMOJIS = ['🛒','👕','✨','🎉','🔧'];
+const DEFAULT_LIMITS = [800, 300, 125, 100, 215];
+
+let state = { weeks: [], currentWeekId: null };
+let fbDb = null;       // Firebase database reference
+let fbSyncing = false; // Prevent echo on remote updates
+
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ─── FIREBASE SETUP ──────────────────────────────────────────────────────────
+function saveFirebaseConfig() {
+  const raw = document.getElementById('fb-config-input').value.trim();
+  const errEl = document.getElementById('fb-setup-error');
+  errEl.style.display = 'none';
+  let cfg;
+  try {
+    // Accept both plain object and const firebaseConfig = {...} format
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Formato inválido');
+    cfg = JSON.parse(match[0]);
+    if (!cfg.databaseURL) throw new Error('databaseURL não encontrado. Verifique se o Realtime Database foi criado.');
+  } catch(e) {
+    errEl.textContent = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    return;
+  }
+  localStorage.setItem('fb_config', JSON.stringify(cfg));
+  initFirebase(cfg);
+}
+
+function usarSemFirebase() {
+  localStorage.setItem('fb_config', 'local');
+  document.getElementById('firebase-setup').style.display = 'none';
+  loadLocal();
+  renderWeekSelect();
+  renderMain();
+}
+
+function initFirebase(cfg) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    fbDb = firebase.database();
+    document.getElementById('firebase-setup').style.display = 'none';
+    showSyncStatus('🔄 Conectando...');
+
+    // Listen for real-time updates
+    fbDb.ref('gastos').on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        const incoming = JSON.parse(data);
+        state.weeks = incoming.weeks || [];
+        // Load pinned week or last week
+        const pinned = localStorage.getItem('pinned_week');
+        if (pinned && state.weeks.find(w => w.id === pinned)) {
+          state.currentWeekId = pinned;
+        } else if (!state.currentWeekId && state.weeks.length > 0) {
+          state.currentWeekId = state.weeks[state.weeks.length - 1].id;
+        }
+        renderWeekSelect();
+        renderMain();
+      }
+      showSyncStatus('✅ Sincronizado');
+    }, err => {
+      showSyncStatus('❌ Erro: ' + err.message);
+    });
+  } catch(e) {
+    document.getElementById('fb-setup-error').textContent = '❌ ' + e.message;
+    document.getElementById('fb-setup-error').style.display = 'block';
+  }
+}
+
+function save() {
+  if (fbDb) {
+    fbDb.ref('gastos').set(JSON.stringify(state));
+    showSyncStatus('💾 Salvando...');
+  } else {
+    localStorage.setItem('gastos_state', JSON.stringify(state));
+  }
+}
+
+function loadLocal() {
+  const raw = localStorage.getItem('gastos_state');
+  if (raw) { try { state = JSON.parse(raw); } catch(e) {} }
+}
+
+function showSyncStatus(msg) {
+  let el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  if (msg.startsWith('✅')) setTimeout(() => { if(el.textContent === msg) el.textContent = ''; }, 3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function appInit() {
+  const stored = localStorage.getItem('fb_config');
+  if (!stored) {
+    document.getElementById('firebase-setup').style.display = 'block';
+    return;
+  }
+  if (stored === 'local') {
+    loadLocal();
+    renderWeekSelect();
+    renderMain();
+    return;
+  }
+  try {
+    const cfg = JSON.parse(stored);
+    initFirebase(cfg);
+  } catch(e) {
+    document.getElementById('firebase-setup').style.display = 'block';
+  }
+}
+
+// ─── COMPUTED ────────────────────────────────────────────────────────────────
+function totalSaldo(week) {
+  return week.saldoEntries.reduce((s,e) => s + e.val, 0);
+}
+
+function catSpent(week, ci) {
+  return week.expenses[ci].reduce((s,e) => s + e.val, 0);
+}
+
+function catBalance(week, ci) {
+  return week.limits[ci] - catSpent(week, ci);
+}
+
+function weekTotal(week) {
+  // Base: sum of category balances (limits already represent the weekly budget)
+  // Extra: any manually entered saldo entries + positive carryover are bonus money on top
+  const catSum = week.limits.reduce((s,_,i) => s + catBalance(week,i), 0);
+  const carryoverPositive = (week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0;
+  const extraSaldo = totalSaldo(week) + carryoverPositive;
+  return catSum + extraSaldo;
+}
+
+// ─── WEEK MANAGEMENT ─────────────────────────────────────────────────────────
+function fmtDate(dateStr) {
+  // "2026-05-29" → "29/05"
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}`;
+}
+
+function fmtCycle(cycleStr) {
+  // "2026-05" → "Mai/26"
+  if (!cycleStr) return '';
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const [y, m] = cycleStr.split('-');
+  return `${months[parseInt(m)-1]}/${y.slice(2)}`;
+}
+
+function fmtCycle(cycleStr) {
+  if (!cycleStr) return '';
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const [y, m] = cycleStr.split('-');
+  return `${months[parseInt(m)-1]}/${y.slice(2)}`;
+}
+
+function autoFillWeekName() {
+  const num = document.getElementById('nw-num').value;
+  const start = document.getElementById('nw-start').value;
+  const end = document.getElementById('nw-end').value;
+  const cycle = document.getElementById('nw-cycle') ? document.getElementById('nw-cycle').value : '';
+  let name = '';
+  if (cycle) name += `Ciclo ${fmtCycle(cycle)} — `;
+  name += `Sem. ${num.toString().padStart(2,'0')}`;
+  if (start) name += ` (${fmtDate(start)}`;
+  if (end) name += ` a ${fmtDate(end)})`;
+  document.getElementById('nw-name').value = name;
+}
+
+function openNewWeekModal() {
+  // Suggest next week number
+  const nums = state.weeks.map(w => w.weekNum);
+  let suggested = 1;
+  if (nums.length > 0) {
+    const last = nums[nums.length - 1];
+    suggested = last >= 5 ? 1 : last + 1;
+  }
+  document.getElementById('nw-num').value = suggested;
+
+  // Show carryover info
+  const lastWeek = state.weeks[state.weeks.length - 1];
+  const infoEl = document.getElementById('carryover-info');
+  if (lastWeek) {
+    const total = weekTotal(lastWeek);
+    if (total > 0) {
+      infoEl.innerHTML = `<span style="color:var(--green)">✅ Sobra da semana anterior: <strong>R$ ${fmt(total)}</strong> — será adicionada ao saldo positivo.</span>`;
+    } else if (total < 0) {
+      infoEl.innerHTML = `<span style="color:var(--red)">⚠️ Débito da semana anterior: <strong>R$ ${fmt(Math.abs(total))}</strong> — será lançado na Margem de Manobra.</span>`;
+    } else {
+      infoEl.innerHTML = `<span style="color:var(--muted)">Semana anterior zerada.</span>`;
+    }
+  } else {
+    infoEl.innerHTML = '';
+  }
+
+  // Pre-fill cycle with current month
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  if (document.getElementById('nw-cycle')) {
+    document.getElementById('nw-cycle').value = `${yyyy}-${mm}`;
+  }
+
+  // Pre-fill: next Friday as start, following Thursday as end
+  const dayOfWeek = today.getDay();
+  const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7;
+  const nextFriday = new Date(today);
+  nextFriday.setDate(today.getDate() + daysUntilFriday);
+  const nextThursday = new Date(nextFriday);
+  nextThursday.setDate(nextFriday.getDate() + 6);
+
+  const toInputVal = d => d.toISOString().split('T')[0];
+  document.getElementById('nw-start').value = toInputVal(nextFriday);
+  document.getElementById('nw-end').value = toInputVal(nextThursday);
+  autoFillWeekName();
+
+  document.getElementById('modal-new-week').classList.remove('hidden');
+}
+
+function createWeek() {
+  const name = document.getElementById('nw-name').value.trim() || `Semana ${document.getElementById('nw-num').value}`;
+  const weekNum = parseInt(document.getElementById('nw-num').value);
+  const limits = [
+    parseFloat(document.getElementById('nw-l0').value) || 800,
+    parseFloat(document.getElementById('nw-l1').value) || 300,
+    parseFloat(document.getElementById('nw-l2').value) || 125,
+    parseFloat(document.getElementById('nw-l3').value) || 100,
+    parseFloat(document.getElementById('nw-l4').value) || 215,
+  ];
+
+  const startDate = document.getElementById('nw-start').value || '';
+  const cycle = document.getElementById('nw-cycle') ? document.getElementById('nw-cycle').value || '' : '';
+
+  // Find chronologically previous week (latest startDate strictly before this one)
+  // Only applies carryover if there is actually a week before this one by date
+  let carryover = null;
+  let initialExpenses = [[], [], [], [], []];
+
+  if (startDate) {
+    const prevWeek = state.weeks
+      .filter(w => w.startDate && w.startDate < startDate)
+      .sort((a,b) => b.startDate.localeCompare(a.startDate))[0];
+
+    if (prevWeek) {
+      const total = weekTotal(prevWeek);
+      if (total !== 0) {
+        carryover = { amount: total, fromWeekName: prevWeek.name };
+        if (total < 0) {
+          initialExpenses[4] = [{ val: Math.abs(total), desc: `Débito semana anterior (${prevWeek.name})` }];
+        }
+      }
+    }
+    // If no previous week found by date → no carryover (Semana 01 começa do zero)
+  }
+
+  const week = {
+    id: generateId(),
+    name,
+    weekNum,
+    startDate,
+    cycle,
+    saldoEntries: [],
+    limits,
+    expenses: initialExpenses,
+    carryover
+  };
+
+  state.weeks.push(week);
+  state.currentWeekId = week.id;
+  save();
+  closeModal('modal-new-week');
+  renderWeekSelect();
+  renderMain();
+}
+
+// ─── SALDO ENTRIES ───────────────────────────────────────────────────────────
+let _addSaldoWeekId = null;
+function openAddSaldoModal(weekId) {
+  _addSaldoWeekId = weekId;
+  document.getElementById('as-value').value = '';
+  document.getElementById('as-desc').value = '';
+  document.getElementById('modal-add-saldo').classList.remove('hidden');
+  setTimeout(() => document.getElementById('as-value').focus(), 100);
+}
+
+function confirmAddSaldo() {
+  const val = parseFloat(document.getElementById('as-value').value);
+  const desc = document.getElementById('as-desc').value.trim() || 'Entrada';
+  if (!val || val <= 0) return;
+  const week = state.weeks.find(w => w.id === _addSaldoWeekId);
+  if (!week) return;
+  week.saldoEntries.push({ val, desc });
+  save();
+  closeModal('modal-add-saldo');
+  renderMain();
+}
+
+function deleteSaldoEntry(weekId, idx) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  week.saldoEntries.splice(idx, 1);
+  save();
+  renderMain();
+}
+
+// ─── EXPENSES ────────────────────────────────────────────────────────────────
+let _addExpenseCatIdx = null;
+let _addExpenseWeekId = null;
+
+function openAddExpenseModal(weekId, catIdx) {
+  _addExpenseWeekId = weekId;
+  _addExpenseCatIdx = catIdx;
+  const sel = document.getElementById('ae-cat');
+  sel.innerHTML = CAT_NAMES.map((n,i) => `<option value="${i}" ${i===catIdx?'selected':''}>${CAT_EMOJIS[i]} ${n}</option>`).join('');
+  document.getElementById('ae-value').value = '';
+  document.getElementById('ae-desc').value = '';
+  document.getElementById('modal-add-expense').classList.remove('hidden');
+  setTimeout(() => document.getElementById('ae-value').focus(), 100);
+}
+
+function confirmAddExpense() {
+  const catIdx = parseInt(document.getElementById('ae-cat').value);
+  const val = parseFloat(document.getElementById('ae-value').value);
+  const desc = document.getElementById('ae-desc').value.trim() || '—';
+  if (!val || val <= 0) return;
+  const week = state.weeks.find(w => w.id === _addExpenseWeekId);
+  if (!week) return;
+  week.expenses[catIdx].push({ val, desc });
+  save();
+  closeModal('modal-add-expense');
+  renderMain();
+}
+
+function deleteExpense(weekId, catIdx, expIdx) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  week.expenses[catIdx].splice(expIdx, 1);
+  save();
+  renderMain();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function fmt(n) {
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderWeekSelect() {
+  const sel = document.getElementById('week-select');
+  const cycleFilter = document.getElementById('cycle-filter');
+
+  if (state.weeks.length === 0) {
+    sel.innerHTML = '<option value="">Nenhuma semana criada</option>';
+    if (cycleFilter) cycleFilter.innerHTML = '<option value="">Todos os ciclos</option>';
+    return;
+  }
+
+  // Sort all weeks chronologically
+  const sorted = [...state.weeks].sort((a, b) => {
+    const ca = (a.startDate || '9999-99-99');
+    const cb = (b.startDate || '9999-99-99');
+    return ca.localeCompare(cb);
+  });
+
+  // Build unique cycle list from the 'cycle' field (YYYY-MM) saved on each week
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  function cycleKeyToLabel(key) {
+    if (!key) return '';
+    const [y, m] = key.split('-');
+    return `${months[parseInt(m)-1]}/${y.slice(2)}`;
+  }
+
+  // Get cycle key for a week: use saved cycle field, fallback to startDate, then parse name
+  function weekCycleKey(w) {
+    if (w.cycle) return w.cycle;
+    if (w.startDate) return w.startDate.slice(0, 7);
+    // Try to parse date from name like "29/05" → 2026-05
+    const match = w.name.match(/(\d{2})\/(\d{2})\/(\d{4})|(\d{2})\/(\d{2})/);
+    if (match) {
+      const day = match[1] || match[4];
+      const mon = match[2] || match[5];
+      const yr = match[3] || new Date().getFullYear();
+      return `${yr}-${mon}`;
+    }
+    return null;
+  }
+
+  if (cycleFilter) {
+    const cycleKeys = [...new Set(sorted.map(weekCycleKey).filter(Boolean))].sort();
+    const currentFilter = cycleFilter.value;
+    cycleFilter.innerHTML = '<option value="">Todos os ciclos</option>' +
+      cycleKeys.map(k => `<option value="${k}" ${k === currentFilter ? 'selected' : ''}>${cycleKeyToLabel(k)}</option>`).join('');
+  }
+
+  // Filter weeks by selected cycle key
+  const selectedCycle = cycleFilter ? cycleFilter.value : '';
+  const filtered = selectedCycle
+    ? sorted.filter(w => weekCycleKey(w) === selectedCycle)
+    : sorted;
+
+  if (filtered.length === 0) {
+    sel.innerHTML = '<option value="">Nenhuma semana neste ciclo</option>';
+    return;
+  }
+
+  sel.innerHTML = filtered.map(w =>
+    `<option value="${w.id}" ${w.id === state.currentWeekId ? 'selected' : ''}>${w.name}</option>`
+  ).join('');
+}
+
+function loadWeek(id) {
+  state.currentWeekId = id;
+  save();
+  renderMain();
+}
+
+function renderMain() {
+  const week = state.weeks.find(w => w.id === state.currentWeekId);
+  const el = document.getElementById('main-content');
+  const headerSub = document.getElementById('week-range-header');
+
+  if (!week) {
+    headerSub.textContent = '—';
+    el.innerHTML = `<div class="empty-state" style="margin-top:60px">
+      <div style="font-size:48px;margin-bottom:12px">📅</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Nenhuma semana criada</div>
+      <div>Toque em <strong>+ Semana</strong> para começar</div>
+    </div>`;
+    return;
+  }
+
+  headerSub.textContent = week.name;
+
+  let html = '';
+
+  // ── CARRYOVER BADGE
+  if (week.carryover) {
+    const c = week.carryover;
+    if (c.amount > 0) {
+      html += `<div class="carryover-badge positive">✅ Sobra de <strong>${c.fromWeekName}</strong>: R$ ${fmt(c.amount)} incluída no saldo</div>`;
+    } else {
+      html += `<div class="carryover-badge negative">⚠️ Débito de <strong>${c.fromWeekName}</strong>: R$ ${fmt(Math.abs(c.amount))} lançado na Margem de Manobra</div>`;
+    }
+  }
+
+  // ── SALDO POSITIVO
+  const carryoverPositive = (week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0;
+  const saldoBase = totalSaldo(week);
+  const saldoTotal = saldoBase + carryoverPositive;
+
+  html += `<div class="saldo-box">
+    <div class="saldo-box-header">
+      <span class="saldo-box-title">💰 Saldo Positivo</span>
+      <button class="btn-small" onclick="openAddSaldoModal('${week.id}')">+ Entrada</button>
+    </div>
+    <div class="saldo-entries">`;
+
+  if (week.carryover && week.carryover.amount > 0) {
+    html += `<div class="saldo-entry">
+      <span class="saldo-entry-label" style="color:var(--green)">Sobra</span>
+      <input type="text" value="R$ ${fmt(week.carryover.amount)}" readonly style="color:var(--green)">
+    </div>`;
+  }
+
+  week.saldoEntries.forEach((e, i) => {
+    html += `<div class="saldo-entry">
+      <span class="saldo-entry-label">R$</span>
+      <input type="number" value="${e.val}" onchange="updateSaldoVal('${week.id}',${i},this.value)" style="width:100px">
+      <input type="text" value="${e.desc}" onchange="updateSaldoDesc('${week.id}',${i},this.value)" style="flex:1">
+      <button class="expense-del" onclick="deleteSaldoEntry('${week.id}',${i})">×</button>
+    </div>`;
+  });
+
+  if (week.saldoEntries.length === 0 && carryoverPositive === 0) {
+    html += `<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px 0">Nenhuma entrada ainda</div>`;
+  }
+
+  html += `</div>
+    <div class="saldo-total">
+      <span class="saldo-total-label">Total disponível</span>
+      <span class="saldo-total-value">R$ ${fmt(saldoTotal)}</span>
+    </div>
+  </div>`;
+
+  // ── CATEGORIES
+  html += `<div class="section-title">Categorias</div>`;
+
+  week.limits.forEach((limit, ci) => {
+    const spent = catSpent(week, ci);
+    const balance = catBalance(week, ci);
+    const pct = Math.min(100, (spent / limit) * 100);
+    const cls = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
+
+    html += `<div class="cat-card ${cls === 'over' ? 'over' : ''}">
+      <div class="cat-header">
+        <span class="cat-name">${CAT_EMOJIS[ci]} ${CAT_NAMES[ci]}</span>
+        <span class="cat-balance ${cls}">R$ ${fmt(balance)}</span>
+      </div>
+      <div class="cat-limit-row">
+        <span class="cat-limit-label">Limite:</span>
+        <input class="cat-limit-input" type="number" value="${limit}" onchange="updateLimit('${week.id}',${ci},this.value)">
+        <span style="font-size:12px;color:var(--muted);margin-left:4px">| Gasto: R$ ${fmt(spent)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="expense-list">`;
+
+    week.expenses[ci].forEach((exp, ei) => {
+      html += `<div class="expense-item">
+        <span class="expense-desc">${exp.desc}</span>
+        <span class="expense-val">− R$ ${fmt(exp.val)}</span>
+        <button class="expense-del" onclick="deleteExpense('${week.id}',${ci},${ei})">×</button>
+      </div>`;
+    });
+
+    html += `</div>
+      <button class="btn-add-expense" onclick="openAddExpenseModal('${week.id}',${ci})">＋ Adicionar gasto</button>
+    </div>`;
+  });
+
+  // ── TOTAL
+  const total = weekTotal(week);
+  const totalCls = total >= 0 ? 'var(--green)' : 'var(--red)';
+
+  html += `<div class="section-title">Resumo da Semana</div>
+  <div class="total-card">
+    <div class="total-rows">`;
+
+  week.limits.forEach((_, ci) => {
+    const bal = catBalance(week, ci);
+    const valCls = bal >= 0 ? 'var(--text)' : 'var(--red)';
+    html += `<div class="total-row">
+      <span class="total-row-label">${CAT_EMOJIS[ci]} ${CAT_NAMES[ci]}</span>
+      <span class="total-row-value" style="color:${valCls}">R$ ${fmt(bal)}</span>
+    </div>`;
+  });
+
+  const extraSaldo = totalSaldo(week) + ((week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0);
+  if (extraSaldo !== 0) {
+    const extraCls = extraSaldo >= 0 ? 'var(--accent)' : 'var(--red)';
+    html += `<div class="total-row">
+      <span class="total-row-label">💼 Saldo extra (sobras/entradas)</span>
+      <span class="total-row-value" style="color:${extraCls}">+ R$ ${fmt(extraSaldo)}</span>
+    </div>`;
+  }
+
+  html += `</div>
+    <div class="total-divider"></div>
+    <div class="total-final">
+      <span class="total-final-label">Saldo Total</span>
+      <span class="total-final-value" style="color:${totalCls}">R$ ${fmt(total)}</span>
+    </div>
+  </div>`;
+
+  // ── ACTION BUTTONS
+  html += `<div class="share-section">
+    <button class="btn-share" onclick="openEditLimitsModal('${week.id}')">⚙️ Editar Margens</button>
+    <button class="btn-share" onclick="openExportModal('${week.id}')">🤖 Exportar p/ Gemini</button>
+  </div>
+  <div class="share-section" style="margin-top:0">
+    <button class="btn-share" onclick="openCycleReport()">📊 Relatório do Ciclo</button>
+    <button class="btn-share" onclick="openShareModal()">📤 Compartilhar</button>
+  </div>`;
+
+  el.innerHTML = html;
+  updatePinBtn();
+}
+
+function updateLimit(weekId, ci, val) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  week.limits[ci] = parseFloat(val) || 0;
+  save();
+  renderMain();
+}
+
+function updateSaldoVal(weekId, idx, val) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  week.saldoEntries[idx].val = parseFloat(val) || 0;
+  save();
+  renderMain();
+}
+
+function updateSaldoDesc(weekId, idx, val) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  week.saldoEntries[idx].desc = val;
+  save();
+}
+
+// ─── EDIT LIMITS ─────────────────────────────────────────────────────────────
+let _editLimitsWeekId = null;
+function openEditLimitsModal(weekId) {
+  _editLimitsWeekId = weekId;
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  week.limits.forEach((l, i) => {
+    document.getElementById(`el-l${i}`).value = l;
+  });
+  updateElTotal();
+  // Live update total as user types
+  [0,1,2,3,4].forEach(i => {
+    document.getElementById(`el-l${i}`).oninput = updateElTotal;
+  });
+  document.getElementById('modal-edit-limits').classList.remove('hidden');
+}
+
+function updateElTotal() {
+  let sum = 0;
+  [0,1,2,3,4].forEach(i => { sum += parseFloat(document.getElementById(`el-l${i}`).value) || 0; });
+  document.getElementById('el-total-label').textContent = `Total: R$ ${fmt(sum)}`;
+}
+
+function confirmEditLimits() {
+  const week = state.weeks.find(w => w.id === _editLimitsWeekId);
+  if (!week) return;
+  [0,1,2,3,4].forEach(i => {
+    week.limits[i] = parseFloat(document.getElementById(`el-l${i}`).value) || 0;
+  });
+  save();
+  closeModal('modal-edit-limits');
+  renderMain();
+}
+
+// ─── EXPORT TO GEMINI ─────────────────────────────────────────────────────────
+function catStatus(pct) {
+  if (pct >= 100) return '🔴';
+  if (pct >= 80) return '⚠️';
+  return '✅';
+}
+
+function buildWeekExtract(week, includePastHistory) {
+  const carryoverPositive = (week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0;
+  const extraSaldo = totalSaldo(week) + carryoverPositive;
+  const total = weekTotal(week);
+  const totalLimits = week.limits.reduce((s,l) => s+l, 0);
+
+  let lines = [];
+  lines.push(`╔════════════════════════════════════╗`);
+  lines.push(`  📊 EXTRATO SEMANAL`);
+  lines.push(`  ${week.name}`);
+  lines.push(`╚════════════════════════════════════╝`);
+
+  // Saldo
+  lines.push(`\n💰 SALDO DISPONÍVEL`);
+  lines.push(`  Orçamento base (categorias): R$ ${fmt(totalLimits)}`);
+  if (carryoverPositive > 0) lines.push(`  + Sobra semana anterior: R$ ${fmt(carryoverPositive)}`);
+  week.saldoEntries.forEach(e => lines.push(`  + ${e.desc}: R$ ${fmt(e.val)}`));
+  if (week.carryover && week.carryover.amount < 0) lines.push(`  - Débito semana anterior: R$ ${fmt(Math.abs(week.carryover.amount))}`);
+
+  // Categorias
+  lines.push(`\n📋 CATEGORIAS`);
+  week.limits.forEach((limit, ci) => {
+    const spent = catSpent(week, ci);
+    const bal = catBalance(week, ci);
+    const pct = limit > 0 ? (spent/limit)*100 : 0;
+    const status = catStatus(pct);
+    lines.push(`\n${status} ${CAT_EMOJIS[ci]} ${CAT_NAMES[ci]}`);
+    lines.push(`   Limite: R$ ${fmt(limit)} | Gasto: R$ ${fmt(spent)} | Saldo: R$ ${fmt(bal)} (${pct.toFixed(0)}% usado)`);
+    if (week.expenses[ci].length > 0) {
+      week.expenses[ci].forEach(e => lines.push(`   • ${e.desc}: R$ ${fmt(e.val)}`));
+    } else {
+      lines.push(`   (sem gastos)`);
+    }
+  });
+
+  // Resultado
+  const resultIcon = total >= 0 ? '✅' : '🔴';
+  lines.push(`\n${'─'.repeat(40)}`);
+  lines.push(`${resultIcon} SALDO FINAL DA SEMANA: R$ ${fmt(total)}`);
+  if (total < 0) lines.push(`⚠️ Semana encerrada no negativo — R$ ${fmt(Math.abs(total))} serão debitados da próxima semana.`);
+  if (total > 0) lines.push(`💚 Semana encerrada com sobra de R$ ${fmt(total)}.`);
+
+  // Histórico
+  if (includePastHistory) {
+    const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+    const pastWeeks = sorted.filter(w => w.id !== week.id && (!w.startDate || !week.startDate || w.startDate < week.startDate));
+    if (pastWeeks.length > 0) {
+      lines.push(`\n📅 SEMANAS ANTERIORES DO CICLO`);
+      pastWeeks.forEach(pw => {
+        const pt = weekTotal(pw);
+        const icon = pt >= 0 ? '✅' : '🔴';
+        lines.push(`  ${icon} ${pw.name}: R$ ${fmt(pt)}`);
+      });
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function openExportModal(weekId) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+
+  const extract = buildWeekExtract(week, true);
+  const prompt = `\n\n${'═'.repeat(40)}\n🤖 INSTRUÇÃO PARA O GEMINI\n${'═'.repeat(40)}\nAnalise este extrato semanal de gastos da família. Responda em português, de forma direta e prática:\n1. Como foi o desempenho desta semana? (resumo em 2 linhas)\n2. Quais categorias merecem atenção e por quê?\n3. O que está indo bem?\n4. Uma sugestão prática e específica para a próxima semana.`;
+
+  document.getElementById('export-text').value = extract + prompt;
+  document.getElementById('modal-export').classList.remove('hidden');
+}
+
+// ─── CYCLE REPORT ─────────────────────────────────────────────────────────────
+function openCycleReport() {
+  const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+  const el = document.getElementById('cycle-week-checkboxes');
+  el.innerHTML = sorted.map(w => `
+    <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer">
+      <input type="checkbox" value="${w.id}" checked style="width:18px;height:18px;accent-color:var(--accent)">
+      ${w.name}
+    </label>
+  `).join('');
+  el.querySelectorAll('input').forEach(cb => cb.addEventListener('change', renderCycleReport));
+  renderCycleReport();
+  document.getElementById('modal-cycle-report').classList.remove('hidden');
+}
+
+function getSelectedWeeks() {
+  const checked = document.querySelectorAll('#cycle-week-checkboxes input:checked');
+  const ids = [...checked].map(cb => cb.value);
+  return state.weeks.filter(w => ids.includes(w.id))
+    .sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+}
+
+function renderCycleReport() {
+  const weeks = getSelectedWeeks();
+  const el = document.getElementById('cycle-report-content');
+  if (weeks.length === 0) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">Selecione ao menos uma semana.</p>'; return; }
+
+  // Totals per category
+  const totalSpentPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + catSpent(w,ci), 0));
+  const totalLimitPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + w.limits[ci], 0));
+  const cycleTotal = weeks.reduce((s,w) => s + weekTotal(w), 0);
+
+  // Best and worst week
+  const weekTotals = weeks.map(w => ({ name: w.name, total: weekTotal(w) }));
+  const best = weekTotals.reduce((a,b) => b.total > a.total ? b : a);
+  const worst = weekTotals.reduce((a,b) => b.total < a.total ? b : a);
+
+  let html = `<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px">`;
+  html += `<div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase">Resultado por Categoria</div>`;
+
+  CAT_NAMES.forEach((name, ci) => {
+    const spent = totalSpentPerCat[ci];
+    const limit = totalLimitPerCat[ci];
+    const pct = limit > 0 ? Math.min(100, (spent/limit)*100) : 0;
+    const cls = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
+    const balColor = spent <= limit ? 'var(--green)' : 'var(--red)';
+    html += `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:13px">${CAT_EMOJIS[ci]} ${name}</span>
+        <span style="font-size:13px;font-weight:700;color:${balColor}">R$ ${fmt(spent)} / R$ ${fmt(limit)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Week by week
+  html += `<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px">`;
+  html += `<div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase">Semana a Semana</div>`;
+  weeks.forEach(w => {
+    const t = weekTotal(w);
+    const color = t >= 0 ? 'var(--green)' : 'var(--red)';
+    const icon = t >= 0 ? '✅' : '🔴';
+    html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px">${icon} ${w.name}</span>
+      <span style="font-size:13px;font-weight:700;color:${color}">R$ ${fmt(t)}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Highlights
+  const cycleColor = cycleTotal >= 0 ? 'var(--green)' : 'var(--red)';
+  html += `<div style="background:var(--card2);border-radius:10px;padding:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:14px;font-weight:700">Saldo Total do Ciclo</span>
+      <span style="font-size:18px;font-weight:900;color:${cycleColor}">R$ ${fmt(cycleTotal)}</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted)">📈 Melhor semana: ${best.name} (R$ ${fmt(best.total)})</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">📉 Semana mais pesada: ${worst.name} (R$ ${fmt(worst.total)})</div>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function exportCycleToGemini() {
+  const weeks = getSelectedWeeks();
+  if (weeks.length === 0) return;
+
+  const totalSpentPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + catSpent(w,ci), 0));
+  const totalLimitPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + w.limits[ci], 0));
+  const cycleTotal = weeks.reduce((s,w) => s + weekTotal(w), 0);
+
+  let lines = [];
+  lines.push(`╔════════════════════════════════════╗`);
+  lines.push(`  📊 EXTRATO DO CICLO`);
+  lines.push(`  ${weeks[0]?.name || ''} → ${weeks[weeks.length-1]?.name || ''}`);
+  lines.push(`╚════════════════════════════════════╝`);
+
+  lines.push(`\n📋 TOTAL POR CATEGORIA NO CICLO`);
+  CAT_NAMES.forEach((name, ci) => {
+    const spent = totalSpentPerCat[ci];
+    const limit = totalLimitPerCat[ci];
+    const pct = limit > 0 ? (spent/limit)*100 : 0;
+    const status = catStatus(pct);
+    lines.push(`${status} ${CAT_EMOJIS[ci]} ${name}: R$ ${fmt(spent)} de R$ ${fmt(limit)} (${pct.toFixed(0)}%)`);
+  });
+
+  lines.push(`\n📅 SEMANA A SEMANA`);
+  weeks.forEach(w => {
+    const t = weekTotal(w);
+    const icon = t >= 0 ? '✅' : '🔴';
+    lines.push(`${icon} ${w.name}: R$ ${fmt(t)}`);
+    CAT_NAMES.forEach((_,ci) => {
+      const spent = catSpent(w,ci);
+      if (spent > 0) lines.push(`   • ${CAT_NAMES[ci]}: R$ ${fmt(spent)}`);
+    });
+  });
+
+  const resultIcon = cycleTotal >= 0 ? '✅' : '🔴';
+  lines.push(`\n${'─'.repeat(40)}`);
+  lines.push(`${resultIcon} SALDO FINAL DO CICLO: R$ ${fmt(cycleTotal)}`);
+
+  lines.push(`\n${'═'.repeat(40)}`);
+  lines.push(`🤖 INSTRUÇÃO PARA O GEMINI`);
+  lines.push(`${'═'.repeat(40)}`);
+  lines.push(`Analise este extrato de ciclo completo (${weeks.length} semanas) dos meus gastos familiares. Responda em português:\n1. Avaliação geral do ciclo — foi um bom mês financeiramente?\n2. Qual categoria mais comprometeu o orçamento e por quê?\n3. Comparativo entre as semanas — houve evolução ou piora?\n4. O que devemos fazer diferente no próximo ciclo?\n5. Pontos positivos que devemos manter.`);
+
+  document.getElementById('export-text').value = lines.join('\n');
+  closeModal('modal-cycle-report');
+  document.getElementById('modal-export').classList.remove('hidden');
+}
+
+function copyExportText() {
+  const el = document.getElementById('export-text');
+  navigator.clipboard.writeText(el.value).then(() => {
+    alert('Copiado! Cole na sua conversa com o Gemini 🤖');
+  }).catch(() => {
+    el.select();
+    document.execCommand('copy');
+    alert('Copiado!');
+  });
+}
+
+// ─── EDIT / DELETE WEEK ──────────────────────────────────────────────────────
+function openEditWeekModal() {
+  const week = state.weeks.find(w => w.id === state.currentWeekId);
+  if (!week) return;
+  document.getElementById('ew-cycle').value = week.cycle || '';
+  document.getElementById('ew-name').value = week.name;
+  document.getElementById('ew-num').value = week.weekNum;
+  document.getElementById('modal-edit-week').classList.remove('hidden');
+}
+
+function confirmEditWeek() {
+  const week = state.weeks.find(w => w.id === state.currentWeekId);
+  if (!week) return;
+  week.cycle = document.getElementById('ew-cycle').value || week.cycle || '';
+  week.name = document.getElementById('ew-name').value.trim() || week.name;
+  week.weekNum = parseInt(document.getElementById('ew-num').value);
+  save();
+  closeModal('modal-edit-week');
+  renderWeekSelect();
+  renderMain();
+}
+
+function deleteCurrentWeek() {
+  const week = state.weeks.find(w => w.id === state.currentWeekId);
+  if (!week) return;
+  if (!confirm(`Apagar "${week.name}"? Todos os gastos serão perdidos.`)) return;
+  state.weeks = state.weeks.filter(w => w.id !== state.currentWeekId);
+  state.currentWeekId = state.weeks.length > 0 ? state.weeks[state.weeks.length - 1].id : null;
+  save();
+  renderWeekSelect();
+  renderMain();
+}
+
+// ─── SHARE ────────────────────────────────────────────────────────────────────
+function openShareModal() {
+  const encoded = btoa(encodeURIComponent(JSON.stringify(state)));
+  const url = window.location.href.split('?')[0] + '?d=' + encoded;
+  document.getElementById('share-url').value = url;
+  document.getElementById('modal-share').classList.remove('hidden');
+}
+
+function copyShareUrl() {
+  const el = document.getElementById('share-url');
+  el.select();
+  navigator.clipboard.writeText(el.value).then(() => {
+    alert('Link copiado! Envie pelo WhatsApp para a Andreza 📱');
+  }).catch(() => {
+    el.select();
+    document.execCommand('copy');
+    alert('Link copiado!');
+  });
+}
+
+function loadFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const d = params.get('d');
+  if (d) {
+    try {
+      const loaded = JSON.parse(decodeURIComponent(atob(d)));
+      state = loaded;
+      save();
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } catch(e) { console.error('Erro ao carregar link:', e); }
+  }
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) el.classList.add('hidden');
+  });
+});
+
+// ─── PIN WEEK ─────────────────────────────────────────────────────────────────
+function togglePin() {
+  const pinned = localStorage.getItem('pinned_week');
+  if (pinned === state.currentWeekId) {
+    localStorage.removeItem('pinned_week');
+  } else {
+    localStorage.setItem('pinned_week', state.currentWeekId);
+  }
+  updatePinBtn();
+}
+
+function updatePinBtn() {
+  const track = document.getElementById('pin-btn');
+  const knob = document.getElementById('pin-knob');
+  if (!track || !knob) return;
+  const pinned = localStorage.getItem('pinned_week');
+  if (pinned === state.currentWeekId) {
+    track.style.background = '#22c55e';
+    knob.style.left = '18px';
+  } else {
+    track.style.background = 'var(--border)';
+    knob.style.left = '2px';
+  }
+}
+
+function openFirebaseSetup() {
+  document.getElementById('firebase-setup').style.display = 'block';
+  const stored = localStorage.getItem('fb_config');
+  if (stored && stored !== 'local') {
+    document.getElementById('fb-config-input').value = stored;
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+appInit();
+</script>
+</body>
+</html>
