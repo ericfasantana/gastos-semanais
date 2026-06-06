@@ -309,8 +309,10 @@
       <option value="4">Semana 4</option>
       <option value="5">Semana 5</option>
     </select>
-    <div class="modal-btns">
+    <div id="ew-carryover-info" style="font-size:12px;margin:8px 0;color:var(--muted)"></div>
+    <div class="modal-btns" style="flex-wrap:wrap;gap:8px">
       <button class="btn-cancel" onclick="closeModal('modal-edit-week')">Cancelar</button>
+      <button style="background:#374151;color:#e2e8f0;border:none;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer" onclick="recalcCarryover()">🔄 Recalcular Carryover</button>
       <button class="btn-primary" onclick="confirmEditWeek()">Salvar</button>
     </div>
   </div>
@@ -499,6 +501,29 @@ function appInit() {
 }
 
 // ─── COMPUTED ────────────────────────────────────────────────────────────────
+
+// Retorna startDate efetivo: usa o campo salvo ou faz fallback pelo nome da semana
+// Necessário para semanas criadas antes do campo startDate existir
+function getEffectiveStartDate(w) {
+  if (w.startDate) return w.startDate;
+  // Tenta parsear DD/MM do nome (ex: "Ciclo Mai/26 — Sem. 03 (29/05 a 04/06)")
+  const match = w.name && w.name.match(/(\d{2})\/(\d{2})/);
+  if (match) {
+    let year = new Date().getFullYear();
+    // Usa campo cycle (formato "YYYY-MM") se disponível
+    if (w.cycle && /^\d{4}-\d{2}$/.test(w.cycle)) {
+      year = parseInt(w.cycle.split('-')[0]);
+    } else {
+      // Tenta parsear "/26" → 2026 do nome
+      const yMatch = w.name.match(/\/(\d{2})\b/);
+      if (yMatch) year = 2000 + parseInt(yMatch[1]);
+    }
+    // match[1] = DD, match[2] = MM → retorna YYYY-MM-DD
+    return `${year}-${match[2]}-${match[1]}`;
+  }
+  return null;
+}
+
 function totalSaldo(week) {
   return week.saldoEntries.reduce((s,e) => s + e.val, 0);
 }
@@ -566,15 +591,27 @@ function openNewWeekModal() {
   }
   document.getElementById('nw-num').value = suggested;
 
-  // Show carryover info
-  const lastWeek = state.weeks[state.weeks.length - 1];
+  // Show carryover info — usa a semana cronologicamente mais recente como prévia
   const infoEl = document.getElementById('carryover-info');
-  if (lastWeek) {
-    const total = weekTotal(lastWeek);
+  const nextFridayStr = (() => {
+    const d = new Date();
+    const diff = (5 - d.getDay() + 7) % 7 || 7;
+    const f = new Date(d); f.setDate(d.getDate() + diff);
+    return f.toISOString().split('T')[0];
+  })();
+  const prevForPreview = state.weeks
+    .filter(w => { const ed = getEffectiveStartDate(w); return ed && ed < nextFridayStr; })
+    .sort((a,b) => {
+      const ea = getEffectiveStartDate(a) || '0000-00-00';
+      const eb = getEffectiveStartDate(b) || '0000-00-00';
+      return eb.localeCompare(ea);
+    })[0];
+  if (prevForPreview) {
+    const total = weekTotal(prevForPreview);
     if (total > 0) {
-      infoEl.innerHTML = `<span style="color:var(--green)">✅ Sobra da semana anterior: <strong>R$ ${fmt(total)}</strong> — será adicionada ao saldo positivo.</span>`;
+      infoEl.innerHTML = `<span style="color:var(--green)">✅ Sobra de <strong>${prevForPreview.name}</strong>: <strong>R$ ${fmt(total)}</strong> — será adicionada ao saldo positivo.</span>`;
     } else if (total < 0) {
-      infoEl.innerHTML = `<span style="color:var(--red)">⚠️ Débito da semana anterior: <strong>R$ ${fmt(Math.abs(total))}</strong> — será lançado na Margem de Manobra.</span>`;
+      infoEl.innerHTML = `<span style="color:var(--red)">⚠️ Débito de <strong>${prevForPreview.name}</strong>: <strong>R$ ${fmt(Math.abs(total))}</strong> — será lançado na Margem de Manobra.</span>`;
     } else {
       infoEl.innerHTML = `<span style="color:var(--muted)">Semana anterior zerada.</span>`;
     }
@@ -627,8 +664,15 @@ function createWeek() {
 
   if (startDate) {
     const prevWeek = state.weeks
-      .filter(w => w.startDate && w.startDate < startDate)
-      .sort((a,b) => b.startDate.localeCompare(a.startDate))[0];
+      .filter(w => {
+        const ed = getEffectiveStartDate(w);
+        return ed && ed < startDate;
+      })
+      .sort((a,b) => {
+        const ea = getEffectiveStartDate(a) || '0000-00-00';
+        const eb = getEffectiveStartDate(b) || '0000-00-00';
+        return eb.localeCompare(ea);
+      })[0];
 
     if (prevWeek) {
       const total = weekTotal(prevWeek);
@@ -743,10 +787,10 @@ function renderWeekSelect() {
     return;
   }
 
-  // Sort all weeks chronologically
+  // Sort all weeks chronologically (usa getEffectiveStartDate p/ semanas sem startDate)
   const sorted = [...state.weeks].sort((a, b) => {
-    const ca = (a.startDate || '9999-99-99');
-    const cb = (b.startDate || '9999-99-99');
+    const ca = getEffectiveStartDate(a) || '9999-99-99';
+    const cb = getEffectiveStartDate(b) || '9999-99-99';
     return ca.localeCompare(cb);
   });
 
@@ -758,18 +802,11 @@ function renderWeekSelect() {
     return `${months[parseInt(m)-1]}/${y.slice(2)}`;
   }
 
-  // Get cycle key for a week: use saved cycle field, fallback to startDate, then parse name
+  // Get cycle key for a week: use saved cycle field, fallback via getEffectiveStartDate
   function weekCycleKey(w) {
     if (w.cycle) return w.cycle;
-    if (w.startDate) return w.startDate.slice(0, 7);
-    // Try to parse date from name like "29/05" → 2026-05
-    const match = w.name.match(/(\d{2})\/(\d{2})\/(\d{4})|(\d{2})\/(\d{2})/);
-    if (match) {
-      const day = match[1] || match[4];
-      const mon = match[2] || match[5];
-      const yr = match[3] || new Date().getFullYear();
-      return `${yr}-${mon}`;
-    }
+    const ed = getEffectiveStartDate(w);
+    if (ed) return ed.slice(0, 7);
     return null;
   }
 
@@ -1061,8 +1098,9 @@ function buildWeekExtract(week, includePastHistory) {
 
   // Histórico
   if (includePastHistory) {
-    const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
-    const pastWeeks = sorted.filter(w => w.id !== week.id && (!w.startDate || !week.startDate || w.startDate < week.startDate));
+    const sorted = [...state.weeks].sort((a,b) => (getEffectiveStartDate(a)||'').localeCompare(getEffectiveStartDate(b)||''));
+    const thisED = getEffectiveStartDate(week);
+    const pastWeeks = sorted.filter(w => { const ed = getEffectiveStartDate(w); return w.id !== week.id && ed && thisED && ed < thisED; });
     if (pastWeeks.length > 0) {
       lines.push(`\n📅 SEMANAS ANTERIORES DO CICLO`);
       pastWeeks.forEach(pw => {
@@ -1089,7 +1127,7 @@ function openExportModal(weekId) {
 
 // ─── CYCLE REPORT ─────────────────────────────────────────────────────────────
 function openCycleReport() {
-  const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+  const sorted = [...state.weeks].sort((a,b) => (getEffectiveStartDate(a)||'').localeCompare(getEffectiveStartDate(b)||''));
   const el = document.getElementById('cycle-week-checkboxes');
   el.innerHTML = sorted.map(w => `
     <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer">
@@ -1106,7 +1144,7 @@ function getSelectedWeeks() {
   const checked = document.querySelectorAll('#cycle-week-checkboxes input:checked');
   const ids = [...checked].map(cb => cb.value);
   return state.weeks.filter(w => ids.includes(w.id))
-    .sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+    .sort((a,b) => (getEffectiveStartDate(a)||'').localeCompare(getEffectiveStartDate(b)||''));
 }
 
 function renderCycleReport() {
@@ -1237,7 +1275,80 @@ function openEditWeekModal() {
   document.getElementById('ew-cycle').value = week.cycle || '';
   document.getElementById('ew-name').value = week.name;
   document.getElementById('ew-num').value = week.weekNum;
+
+  // Mostra carryover atual e qual seria o correto
+  const infoEl = document.getElementById('ew-carryover-info');
+  const thisED = getEffectiveStartDate(week);
+  const prevWeek = thisED ? state.weeks
+    .filter(w => { const ed = getEffectiveStartDate(w); return ed && ed < thisED; })
+    .sort((a,b) => {
+      const ea = getEffectiveStartDate(a)||'0000-00-00';
+      const eb = getEffectiveStartDate(b)||'0000-00-00';
+      return eb.localeCompare(ea);
+    })[0] : null;
+
+  if (prevWeek) {
+    const correctTotal = weekTotal(prevWeek);
+    const currentCarryover = week.carryover ? week.carryover.amount : 0;
+    const match = Math.abs(correctTotal - currentCarryover) < 0.01;
+    if (!match) {
+      const icon = correctTotal >= 0 ? '✅' : '⚠️';
+      infoEl.innerHTML = `<span style="color:var(--yellow,#facc15)">⚠️ Carryover incorreto detectado!<br>Atual: R$ ${fmt(currentCarryover)} (de ${week.carryover ? week.carryover.fromWeekName : 'nenhum'})<br>${icon} Correto seria: R$ ${fmt(correctTotal)} (de ${prevWeek.name})<br>Clique em "Recalcular Carryover" para corrigir.</span>`;
+    } else {
+      infoEl.innerHTML = `<span style="color:var(--green)">✅ Carryover correto (de ${prevWeek.name}: R$ ${fmt(correctTotal)})</span>`;
+    }
+  } else {
+    infoEl.innerHTML = `<span style="color:var(--muted)">Sem semana anterior detectada (sem carryover).</span>`;
+  }
+
   document.getElementById('modal-edit-week').classList.remove('hidden');
+}
+
+function recalcCarryover() {
+  const week = state.weeks.find(w => w.id === state.currentWeekId);
+  if (!week) return;
+  const thisED = getEffectiveStartDate(week);
+  if (!thisED) { alert('Esta semana não tem data de início. Preencha o nome com a data (ex: 05/06) para recalcular.'); return; }
+
+  const prevWeek = state.weeks
+    .filter(w => { const ed = getEffectiveStartDate(w); return ed && ed < thisED; })
+    .sort((a,b) => {
+      const ea = getEffectiveStartDate(a)||'0000-00-00';
+      const eb = getEffectiveStartDate(b)||'0000-00-00';
+      return eb.localeCompare(ea);
+    })[0];
+
+  if (!prevWeek) {
+    // Sem semana anterior — remove carryover
+    week.carryover = null;
+    // Remove lançamento de débito automático da Margem de Manobra
+    week.expenses[4] = week.expenses[4].filter(e => !e.desc.startsWith('Débito semana anterior'));
+    save(); closeModal('modal-edit-week'); renderWeekSelect(); renderMain();
+    alert('Nenhuma semana anterior encontrada. Carryover removido.');
+    return;
+  }
+
+  const total = weekTotal(prevWeek);
+
+  // Remove débito automático antigo da Margem de Manobra (se houver)
+  week.expenses[4] = week.expenses[4].filter(e => !e.desc.startsWith('Débito semana anterior'));
+
+  if (total === 0) {
+    week.carryover = null;
+  } else {
+    week.carryover = { amount: total, fromWeekName: prevWeek.name };
+    if (total < 0) {
+      week.expenses[4].push({ val: Math.abs(total), desc: `Débito semana anterior (${prevWeek.name})` });
+    }
+  }
+
+  save(); closeModal('modal-edit-week'); renderWeekSelect(); renderMain();
+  const msg = total > 0
+    ? `✅ Carryover atualizado: sobra de R$ ${fmt(total)} de "${prevWeek.name}" adicionada ao saldo.`
+    : total < 0
+    ? `⚠️ Carryover atualizado: débito de R$ ${fmt(Math.abs(total))} de "${prevWeek.name}" lançado na Margem de Manobra.`
+    : 'Semana anterior zerada. Carryover removido.';
+  alert(msg);
 }
 
 function confirmEditWeek() {
