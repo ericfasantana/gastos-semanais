@@ -501,29 +501,6 @@ function appInit() {
 }
 
 // ─── COMPUTED ────────────────────────────────────────────────────────────────
-
-// Retorna startDate efetivo: usa o campo salvo ou faz fallback pelo nome da semana
-// Necessário para semanas criadas antes do campo startDate existir
-function getEffectiveStartDate(w) {
-  if (w.startDate) return w.startDate;
-  // Tenta parsear DD/MM do nome (ex: "Ciclo Mai/26 — Sem. 03 (29/05 a 04/06)")
-  const match = w.name && w.name.match(/(\d{2})\/(\d{2})/);
-  if (match) {
-    let year = new Date().getFullYear();
-    // Usa campo cycle (formato "YYYY-MM") se disponível
-    if (w.cycle && /^\d{4}-\d{2}$/.test(w.cycle)) {
-      year = parseInt(w.cycle.split('-')[0]);
-    } else {
-      // Tenta parsear "/26" → 2026 do nome
-      const yMatch = w.name.match(/\/(\d{2})\b/);
-      if (yMatch) year = 2000 + parseInt(yMatch[1]);
-    }
-    // match[1] = DD, match[2] = MM → retorna YYYY-MM-DD
-    return `${year}-${match[2]}-${match[1]}`;
-  }
-  return null;
-}
-
 function totalSaldo(week) {
   return week.saldoEntries.reduce((s,e) => s + e.val, 0);
 }
@@ -733,10 +710,10 @@ function renderWeekSelect() {
     return;
   }
 
-  // Sort all weeks chronologically (usa getEffectiveStartDate p/ semanas sem startDate)
+  // Sort all weeks chronologically
   const sorted = [...state.weeks].sort((a, b) => {
-    const ca = getEffectiveStartDate(a) || '9999-99-99';
-    const cb = getEffectiveStartDate(b) || '9999-99-99';
+    const ca = (a.startDate || '9999-99-99');
+    const cb = (b.startDate || '9999-99-99');
     return ca.localeCompare(cb);
   });
 
@@ -748,11 +725,17 @@ function renderWeekSelect() {
     return `${months[parseInt(m)-1]}/${y.slice(2)}`;
   }
 
-  // Get cycle key for a week: use saved cycle field, fallback via getEffectiveStartDate
+  // Get cycle key for a week: use saved cycle field, fallback to startDate, then parse name
   function weekCycleKey(w) {
     if (w.cycle) return w.cycle;
-    const ed = getEffectiveStartDate(w);
-    if (ed) return ed.slice(0, 7);
+    if (w.startDate) return w.startDate.slice(0, 7);
+    const match = w.name.match(/(\d{2})\/(\d{2})\/(\d{4})|(\d{2})\/(\d{2})/);
+    if (match) {
+      const day = match[1] || match[4];
+      const mon = match[2] || match[5];
+      const yr = match[3] || new Date().getFullYear();
+      return `${yr}-${mon}`;
+    }
     return null;
   }
 
@@ -1022,9 +1005,8 @@ function buildWeekExtract(week, includePastHistory) {
 
   // Histórico
   if (includePastHistory) {
-    const sorted = [...state.weeks].sort((a,b) => (getEffectiveStartDate(a)||'').localeCompare(getEffectiveStartDate(b)||''));
-    const thisED = getEffectiveStartDate(week);
-    const pastWeeks = sorted.filter(w => { const ed = getEffectiveStartDate(w); return w.id !== week.id && ed && thisED && ed < thisED; });
+    const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+    const pastWeeks = sorted.filter(w => w.id !== week.id && (!w.startDate || !week.startDate || w.startDate < week.startDate));
     if (pastWeeks.length > 0) {
       lines.push(`\n📅 SEMANAS ANTERIORES DO CICLO`);
       pastWeeks.forEach(pw => {
@@ -1051,7 +1033,7 @@ function openExportModal(weekId) {
 
 // ─── CYCLE REPORT ─────────────────────────────────────────────────────────────
 function openCycleReport() {
-  const sorted = [...state.weeks].sort((a,b) => (getEffectiveStartDate(a)||'').localeCompare(getEffectiveStartDate(b)||''));
+  const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
   const el = document.getElementById('cycle-week-checkboxes');
   el.innerHTML = sorted.map(w => `
     <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer">
@@ -1068,7 +1050,7 @@ function getSelectedWeeks() {
   const checked = document.querySelectorAll('#cycle-week-checkboxes input:checked');
   const ids = [...checked].map(cb => cb.value);
   return state.weeks.filter(w => ids.includes(w.id))
-    .sort((a,b) => (getEffectiveStartDate(a)||'').localeCompare(getEffectiveStartDate(b)||''));
+    .sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
 }
 
 function renderCycleReport() {
