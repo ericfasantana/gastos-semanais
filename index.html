@@ -309,6 +309,8 @@
       <option value="4">Semana 4</option>
       <option value="5">Semana 5</option>
     </select>
+    <label>Data de início (sexta-feira) <span style="color:var(--muted);font-size:11px">— corrige o carryover</span></label>
+    <input type="date" id="ew-start" style="color-scheme:dark;margin-bottom:4px">
     <div id="ew-carryover-info" style="font-size:12px;margin:8px 0;color:var(--muted)"></div>
     <div class="modal-btns" style="flex-wrap:wrap;gap:8px">
       <button class="btn-cancel" onclick="closeModal('modal-edit-week')">Cancelar</button>
@@ -1275,6 +1277,7 @@ function openEditWeekModal() {
   document.getElementById('ew-cycle').value = week.cycle || '';
   document.getElementById('ew-name').value = week.name;
   document.getElementById('ew-num').value = week.weekNum;
+  document.getElementById('ew-start').value = week.startDate || '';
 
   // Mostra carryover atual e qual seria o correto
   const infoEl = document.getElementById('ew-carryover-info');
@@ -1357,6 +1360,8 @@ function confirmEditWeek() {
   week.cycle = document.getElementById('ew-cycle').value || week.cycle || '';
   week.name = document.getElementById('ew-name').value.trim() || week.name;
   week.weekNum = parseInt(document.getElementById('ew-num').value);
+  const newStart = document.getElementById('ew-start').value;
+  if (newStart) week.startDate = newStart;
   save();
   closeModal('modal-edit-week');
   renderWeekSelect();
