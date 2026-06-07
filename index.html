@@ -311,10 +311,8 @@
     </select>
     <label>Data de início (sexta-feira) <span style="color:var(--muted);font-size:11px">— corrige o carryover</span></label>
     <input type="date" id="ew-start" style="color-scheme:dark;margin-bottom:4px">
-    <div id="ew-carryover-info" style="font-size:12px;margin:8px 0;color:var(--muted)"></div>
-    <div class="modal-btns" style="flex-wrap:wrap;gap:8px">
+    <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('modal-edit-week')">Cancelar</button>
-      <button style="background:#374151;color:#e2e8f0;border:none;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer" onclick="recalcCarryover()">🔄 Recalcular Carryover</button>
       <button class="btn-primary" onclick="confirmEditWeek()">Salvar</button>
     </div>
   </div>
@@ -539,12 +537,9 @@ function catBalance(week, ci) {
 }
 
 function weekTotal(week) {
-  // Base: sum of category balances (limits already represent the weekly budget)
-  // Extra: any manually entered saldo entries + positive carryover are bonus money on top
+  // Carryover é manual — só conta saldoEntries inseridas pelo usuário
   const catSum = week.limits.reduce((s,_,i) => s + catBalance(week,i), 0);
-  const carryoverPositive = (week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0;
-  const extraSaldo = totalSaldo(week) + carryoverPositive;
-  return catSum + extraSaldo;
+  return catSum + totalSaldo(week);
 }
 
 // ─── WEEK MANAGEMENT ─────────────────────────────────────────────────────────
@@ -593,33 +588,7 @@ function openNewWeekModal() {
   }
   document.getElementById('nw-num').value = suggested;
 
-  // Show carryover info — usa a semana cronologicamente mais recente como prévia
-  const infoEl = document.getElementById('carryover-info');
-  const nextFridayStr = (() => {
-    const d = new Date();
-    const diff = (5 - d.getDay() + 7) % 7 || 7;
-    const f = new Date(d); f.setDate(d.getDate() + diff);
-    return f.toISOString().split('T')[0];
-  })();
-  const prevForPreview = state.weeks
-    .filter(w => { const ed = getEffectiveStartDate(w); return ed && ed < nextFridayStr; })
-    .sort((a,b) => {
-      const ea = getEffectiveStartDate(a) || '0000-00-00';
-      const eb = getEffectiveStartDate(b) || '0000-00-00';
-      return eb.localeCompare(ea);
-    })[0];
-  if (prevForPreview) {
-    const total = weekTotal(prevForPreview);
-    if (total > 0) {
-      infoEl.innerHTML = `<span style="color:var(--green)">✅ Sobra de <strong>${prevForPreview.name}</strong>: <strong>R$ ${fmt(total)}</strong> — será adicionada ao saldo positivo.</span>`;
-    } else if (total < 0) {
-      infoEl.innerHTML = `<span style="color:var(--red)">⚠️ Débito de <strong>${prevForPreview.name}</strong>: <strong>R$ ${fmt(Math.abs(total))}</strong> — será lançado na Margem de Manobra.</span>`;
-    } else {
-      infoEl.innerHTML = `<span style="color:var(--muted)">Semana anterior zerada.</span>`;
-    }
-  } else {
-    infoEl.innerHTML = '';
-  }
+  document.getElementById('carryover-info').innerHTML = '';
 
   // Pre-fill cycle with current month
   const today = new Date();
@@ -659,34 +628,9 @@ function createWeek() {
   const startDate = document.getElementById('nw-start').value || '';
   const cycle = document.getElementById('nw-cycle') ? document.getElementById('nw-cycle').value || '' : '';
 
-  // Find chronologically previous week (latest startDate strictly before this one)
-  // Only applies carryover if there is actually a week before this one by date
-  let carryover = null;
-  let initialExpenses = [[], [], [], [], []];
-
-  if (startDate) {
-    const prevWeek = state.weeks
-      .filter(w => {
-        const ed = getEffectiveStartDate(w);
-        return ed && ed < startDate;
-      })
-      .sort((a,b) => {
-        const ea = getEffectiveStartDate(a) || '0000-00-00';
-        const eb = getEffectiveStartDate(b) || '0000-00-00';
-        return eb.localeCompare(ea);
-      })[0];
-
-    if (prevWeek) {
-      const total = weekTotal(prevWeek);
-      if (total !== 0) {
-        carryover = { amount: total, fromWeekName: prevWeek.name };
-        if (total < 0) {
-          initialExpenses[4] = [{ val: Math.abs(total), desc: `Débito semana anterior (${prevWeek.name})` }];
-        }
-      }
-    }
-    // If no previous week found by date → no carryover (Semana 01 começa do zero)
-  }
+  // Carryover gerenciado manualmente pelo usuário
+  const carryover = null;
+  const initialExpenses = [[], [], [], [], []];
 
   const week = {
     id: generateId(),
@@ -860,20 +804,8 @@ function renderMain() {
 
   let html = '';
 
-  // ── CARRYOVER BADGE
-  if (week.carryover) {
-    const c = week.carryover;
-    if (c.amount > 0) {
-      html += `<div class="carryover-badge positive">✅ Sobra de <strong>${c.fromWeekName}</strong>: R$ ${fmt(c.amount)} incluída no saldo</div>`;
-    } else {
-      html += `<div class="carryover-badge negative">⚠️ Débito de <strong>${c.fromWeekName}</strong>: R$ ${fmt(Math.abs(c.amount))} lançado na Margem de Manobra</div>`;
-    }
-  }
-
-  // ── SALDO POSITIVO
-  const carryoverPositive = (week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0;
-  const saldoBase = totalSaldo(week);
-  const saldoTotal = saldoBase + carryoverPositive;
+  // ── SALDO POSITIVO (manual — sem carryover automático)
+  const saldoTotal = totalSaldo(week);
 
   html += `<div class="saldo-box">
     <div class="saldo-box-header">
@@ -881,13 +813,6 @@ function renderMain() {
       <button class="btn-small" onclick="openAddSaldoModal('${week.id}')">+ Entrada</button>
     </div>
     <div class="saldo-entries">`;
-
-  if (week.carryover && week.carryover.amount > 0) {
-    html += `<div class="saldo-entry">
-      <span class="saldo-entry-label" style="color:var(--green)">Sobra</span>
-      <input type="text" value="R$ ${fmt(week.carryover.amount)}" readonly style="color:var(--green)">
-    </div>`;
-  }
 
   week.saldoEntries.forEach((e, i) => {
     html += `<div class="saldo-entry">
@@ -898,7 +823,7 @@ function renderMain() {
     </div>`;
   });
 
-  if (week.saldoEntries.length === 0 && carryoverPositive === 0) {
+  if (week.saldoEntries.length === 0) {
     html += `<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px 0">Nenhuma entrada ainda</div>`;
   }
 
@@ -961,11 +886,11 @@ function renderMain() {
     </div>`;
   });
 
-  const extraSaldo = totalSaldo(week) + ((week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0);
+  const extraSaldo = totalSaldo(week);
   if (extraSaldo !== 0) {
     const extraCls = extraSaldo >= 0 ? 'var(--accent)' : 'var(--red)';
     html += `<div class="total-row">
-      <span class="total-row-label">💼 Saldo extra (sobras/entradas)</span>
+      <span class="total-row-label">💼 Saldo extra (entradas)</span>
       <span class="total-row-value" style="color:${extraCls}">+ R$ ${fmt(extraSaldo)}</span>
     </div>`;
   }
@@ -1057,8 +982,7 @@ function catStatus(pct) {
 }
 
 function buildWeekExtract(week, includePastHistory) {
-  const carryoverPositive = (week.carryover && week.carryover.amount > 0) ? week.carryover.amount : 0;
-  const extraSaldo = totalSaldo(week) + carryoverPositive;
+  const extraSaldo = totalSaldo(week);
   const total = weekTotal(week);
   const totalLimits = week.limits.reduce((s,l) => s+l, 0);
 
@@ -1071,9 +995,7 @@ function buildWeekExtract(week, includePastHistory) {
   // Saldo
   lines.push(`\n💰 SALDO DISPONÍVEL`);
   lines.push(`  Orçamento base (categorias): R$ ${fmt(totalLimits)}`);
-  if (carryoverPositive > 0) lines.push(`  + Sobra semana anterior: R$ ${fmt(carryoverPositive)}`);
-  week.saldoEntries.forEach(e => lines.push(`  + ${e.desc}: R$ ${fmt(e.val)}`));
-  if (week.carryover && week.carryover.amount < 0) lines.push(`  - Débito semana anterior: R$ ${fmt(Math.abs(week.carryover.amount))}`);
+  week.saldoEntries.forEach(e => lines.push(`  + ${e.desc}: R$ ${fmt(e.val)}`))
 
   // Categorias
   lines.push(`\n📋 CATEGORIAS`);
@@ -1095,7 +1017,7 @@ function buildWeekExtract(week, includePastHistory) {
   const resultIcon = total >= 0 ? '✅' : '🔴';
   lines.push(`\n${'─'.repeat(40)}`);
   lines.push(`${resultIcon} SALDO FINAL DA SEMANA: R$ ${fmt(total)}`);
-  if (total < 0) lines.push(`⚠️ Semana encerrada no negativo — R$ ${fmt(Math.abs(total))} serão debitados da próxima semana.`);
+  if (total < 0) lines.push(`⚠️ Semana encerrada no negativo — R$ ${fmt(Math.abs(total))}.`);
   if (total > 0) lines.push(`💚 Semana encerrada com sobra de R$ ${fmt(total)}.`);
 
   // Histórico
@@ -1278,80 +1200,7 @@ function openEditWeekModal() {
   document.getElementById('ew-name').value = week.name;
   document.getElementById('ew-num').value = week.weekNum;
   document.getElementById('ew-start').value = week.startDate || '';
-
-  // Mostra carryover atual e qual seria o correto
-  const infoEl = document.getElementById('ew-carryover-info');
-  const thisED = getEffectiveStartDate(week);
-  const prevWeek = thisED ? state.weeks
-    .filter(w => { const ed = getEffectiveStartDate(w); return ed && ed < thisED; })
-    .sort((a,b) => {
-      const ea = getEffectiveStartDate(a)||'0000-00-00';
-      const eb = getEffectiveStartDate(b)||'0000-00-00';
-      return eb.localeCompare(ea);
-    })[0] : null;
-
-  if (prevWeek) {
-    const correctTotal = weekTotal(prevWeek);
-    const currentCarryover = week.carryover ? week.carryover.amount : 0;
-    const match = Math.abs(correctTotal - currentCarryover) < 0.01;
-    if (!match) {
-      const icon = correctTotal >= 0 ? '✅' : '⚠️';
-      infoEl.innerHTML = `<span style="color:var(--yellow,#facc15)">⚠️ Carryover incorreto detectado!<br>Atual: R$ ${fmt(currentCarryover)} (de ${week.carryover ? week.carryover.fromWeekName : 'nenhum'})<br>${icon} Correto seria: R$ ${fmt(correctTotal)} (de ${prevWeek.name})<br>Clique em "Recalcular Carryover" para corrigir.</span>`;
-    } else {
-      infoEl.innerHTML = `<span style="color:var(--green)">✅ Carryover correto (de ${prevWeek.name}: R$ ${fmt(correctTotal)})</span>`;
-    }
-  } else {
-    infoEl.innerHTML = `<span style="color:var(--muted)">Sem semana anterior detectada (sem carryover).</span>`;
-  }
-
   document.getElementById('modal-edit-week').classList.remove('hidden');
-}
-
-function recalcCarryover() {
-  const week = state.weeks.find(w => w.id === state.currentWeekId);
-  if (!week) return;
-  const thisED = getEffectiveStartDate(week);
-  if (!thisED) { alert('Esta semana não tem data de início. Preencha o nome com a data (ex: 05/06) para recalcular.'); return; }
-
-  const prevWeek = state.weeks
-    .filter(w => { const ed = getEffectiveStartDate(w); return ed && ed < thisED; })
-    .sort((a,b) => {
-      const ea = getEffectiveStartDate(a)||'0000-00-00';
-      const eb = getEffectiveStartDate(b)||'0000-00-00';
-      return eb.localeCompare(ea);
-    })[0];
-
-  if (!prevWeek) {
-    // Sem semana anterior — remove carryover
-    week.carryover = null;
-    // Remove lançamento de débito automático da Margem de Manobra
-    week.expenses[4] = week.expenses[4].filter(e => !e.desc.startsWith('Débito semana anterior'));
-    save(); closeModal('modal-edit-week'); renderWeekSelect(); renderMain();
-    alert('Nenhuma semana anterior encontrada. Carryover removido.');
-    return;
-  }
-
-  const total = weekTotal(prevWeek);
-
-  // Remove débito automático antigo da Margem de Manobra (se houver)
-  week.expenses[4] = week.expenses[4].filter(e => !e.desc.startsWith('Débito semana anterior'));
-
-  if (total === 0) {
-    week.carryover = null;
-  } else {
-    week.carryover = { amount: total, fromWeekName: prevWeek.name };
-    if (total < 0) {
-      week.expenses[4].push({ val: Math.abs(total), desc: `Débito semana anterior (${prevWeek.name})` });
-    }
-  }
-
-  save(); closeModal('modal-edit-week'); renderWeekSelect(); renderMain();
-  const msg = total > 0
-    ? `✅ Carryover atualizado: sobra de R$ ${fmt(total)} de "${prevWeek.name}" adicionada ao saldo.`
-    : total < 0
-    ? `⚠️ Carryover atualizado: débito de R$ ${fmt(Math.abs(total))} de "${prevWeek.name}" lançado na Margem de Manobra.`
-    : 'Semana anterior zerada. Carryover removido.';
-  alert(msg);
 }
 
 function confirmEditWeek() {
