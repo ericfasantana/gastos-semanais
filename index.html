@@ -348,7 +348,8 @@
 <div class="modal-overlay hidden" id="modal-export">
   <div class="modal">
     <div class="modal-title">🤖 Exportar para Gemini</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Copie o texto abaixo e cole na sua conversa fixa com o Gemini.</p>
+    <label style="font-size:13px;color:var(--muted)">Semana a exportar</label>
+    <select id="export-week-select" onchange="refreshExportText()" style="margin-bottom:10px"></select>
     <textarea id="export-text" readonly style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:12px;height:220px;resize:none;line-height:1.5"></textarea>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('modal-export')">Fechar</button>
@@ -1020,14 +1021,30 @@ function buildWeekExtract(week, includePastHistory) {
   return lines.join('\n');
 }
 
-function openExportModal(weekId) {
-  const week = state.weeks.find(w => w.id === weekId);
-  if (!week) return;
-
+function buildExportText(week) {
   const extract = buildWeekExtract(week, true);
   const prompt = `\n\n${'═'.repeat(40)}\n🤖 INSTRUÇÃO PARA O GEMINI\n${'═'.repeat(40)}\nAnalise este extrato semanal de gastos da família. Responda em português, de forma direta e prática:\n1. Como foi o desempenho desta semana? (resumo em 2 linhas)\n2. Quais categorias merecem atenção e por quê?\n3. O que está indo bem?\n4. Uma sugestão prática e específica para a próxima semana.`;
+  return extract + prompt;
+}
 
-  document.getElementById('export-text').value = extract + prompt;
+function refreshExportText() {
+  const sel = document.getElementById('export-week-select');
+  const week = state.weeks.find(w => w.id === sel.value);
+  if (!week) return;
+  document.getElementById('export-text').value = buildExportText(week);
+}
+
+function openExportModal(weekId) {
+  // Popula o seletor com todas as semanas (cronológica)
+  const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+  const sel = document.getElementById('export-week-select');
+  sel.innerHTML = sorted.map(w =>
+    `<option value="${w.id}" ${w.id === weekId ? 'selected' : ''}>${w.name}</option>`
+  ).join('');
+
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+  document.getElementById('export-text').value = buildExportText(week);
   document.getElementById('modal-export').classList.remove('hidden');
 }
 
