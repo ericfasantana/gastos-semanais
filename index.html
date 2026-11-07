@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gastos Semanais">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <style>
@@ -30,6 +31,46 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+
+  /* DASHBOARD */
+  #dashboard { position: fixed; inset: 0; background: var(--bg); z-index: 150; overflow-y: auto; }
+  #dashboard.hidden { display: none; }
+  .dash-bar { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .dash-title { flex: 1; font-size: 16px; font-weight: 800; color: var(--accent); }
+  .dash-body { max-width: 900px; margin: 0 auto; padding: 14px 14px 40px; }
+  .dash-filters { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .dash-filters label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .dash-filters select, .dash-filters input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px; font-size: 13px; color-scheme: dark; }
+  .dash-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+  .dash-kpi { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+  .dash-kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .dash-kpi-value { font-size: 20px; font-weight: 900; margin-top: 4px; }
+  .dash-kpi-sub { font-size: 12px; margin-top: 3px; color: var(--muted); }
+  .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  .dash-card h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .dash-hint { font-size: 11px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .dash-chart { position: relative; height: 260px; }
+  .place-row { padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .place-row:last-child { border-bottom: none; }
+  .place-top { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+  .place-bar { height: 6px; border-radius: 3px; background: var(--card2); margin-top: 5px; overflow: hidden; }
+  .place-bar > div { height: 100%; background: var(--accent); border-radius: 3px; }
+  .dash-toggle button { background: var(--card2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
+  .dash-toggle button.on { background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 700; }
+  .detail-row { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .print-title { display: none; font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+  @media (max-width: 520px) { .dash-filters { grid-template-columns: 1fr 1fr; } .dash-filters > div:first-child { grid-column: 1 / -1; } }
+  @media print {
+    @page { margin: 10mm; }
+    html, body { background: var(--bg) !important; }
+    body > *:not(#dashboard) { display: none !important; }
+    #dashboard { position: static !important; overflow: visible !important; }
+    .no-print { display: none !important; }
+    .print-title { display: block; color: var(--accent); }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dash-card, .dash-kpi { break-inside: avoid; }
+  }
 
   /* HEADER */
   .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
@@ -341,21 +382,23 @@
   </div>
 </div>
 
-<!-- MODAL: RELATÓRIO DO MÊS -->
-<div class="modal-overlay hidden" id="modal-cycle-report">
-  <div class="modal" style="max-height:90vh;overflow-y:auto">
-    <div class="modal-title">📊 Relatório do Mês</div>
-    <label>Mês</label>
-    <select id="rep-month" onchange="onRepMonth()"></select>
-    <div class="nw-row" style="margin-top:8px">
-      <div><label>De</label><input type="date" id="rep-from" onchange="renderReport()" style="color-scheme:dark"></div>
-      <div><label>Até</label><input type="date" id="rep-to" onchange="renderReport()" style="color-scheme:dark"></div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+  <div class="dash-bar no-print">
+    <button class="btn-small" onclick="closeDashboard()" style="font-size:14px;padding:6px 10px">← Voltar</button>
+    <div class="dash-title">📊 Dashboard</div>
+    <button class="btn-small" onclick="window.print()" style="font-size:13px;padding:6px 10px">📄 Salvar PDF</button>
+    <button class="btn-small" onclick="exportReportToGemini()" style="font-size:13px;padding:6px 10px">🤖 Gemini</button>
+  </div>
+  <div class="dash-body">
+    <div class="print-title">💸 Gastos Semanais — <span id="dash-print-period"></span></div>
+    <div class="dash-filters no-print">
+      <div><label>Mês</label><select id="rep-month" onchange="onRepMonth()"></select></div>
+      <div><label>De</label><input type="date" id="rep-from" onchange="renderReport()"></div>
+      <div><label>Até</label><input type="date" id="rep-to" onchange="renderReport()"></div>
     </div>
-    <div id="cycle-report-content" style="margin-top:16px"></div>
-    <div class="modal-btns" style="margin-top:12px">
-      <button class="btn-cancel" onclick="closeModal('modal-cycle-report')">Fechar</button>
-      <button class="btn-primary" onclick="exportReportToGemini()">🤖 Exportar p/ Gemini</button>
-    </div>
+    <div id="dash-content"></div>
+    <div id="dash-detail"></div>
   </div>
 </div>
 
@@ -1095,8 +1138,14 @@ function openMonthReport() {
   const cw = state.weeks.find(w => w.id === state.currentWeekId);
   const cur = (cw && cw.startDate) ? monthKeyOf(cw.startDate) : keys[0];
   document.getElementById('rep-month').innerHTML = keys.map(k => `<option value="${k}" ${k===cur?'selected':''}>${monthLabel(k)}</option>`).join('');
+  document.getElementById('dashboard').classList.remove('hidden');
   onRepMonth();
-  document.getElementById('modal-cycle-report').classList.remove('hidden');
+}
+
+function closeDashboard() {
+  document.getElementById('dashboard').classList.add('hidden');
+  Object.values(_charts).forEach(c => c.destroy());
+  _charts = {};
 }
 
 function onRepMonth() {
@@ -1117,53 +1166,152 @@ function deltaHtml(cur, prev, label) {
   return `<span style="color:${color};font-weight:700">${d>=0?'+':'−'} R$ ${fmt(Math.abs(d))}${pctDelta(cur,prev)}</span>`;
 }
 
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+const CAT_COLORS = ['#38bdf8','#a78bfa','#f472b6','#facc15','#fb923c'];
+let _charts = {};
+let _dashItems = {};   // dados para o detalhe ao tocar
+let placeSort = 'valor';
+
+function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function normTxt(t){ return (t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9&' ]/g,' ').replace(/\s+/g,' ').trim(); }
+
+const PLACE_ALIASES = [
+  [/pao de acucar/,'Pão de Açúcar'], [/w ?carnes/,'W Carnes'], [/sams/,"Sam's Club"], [/fribal/,'Empório Fribal'],
+  [/paraiba(n|k)/,'Paraibano'], [/bel+a ?the/,'Bela The'], [/drogasil/,'Drogasil'], [/pague menos/,'Pague Menos'],
+  [/assai/,'Assaí'], [/carvalho/,'Carvalho'], [/grelhatta/,'Grelhatta'], [/grelhados/,'Grelhados'], [/santa grelha/,'Santa Grelha'],
+  [/\bigos\b/,'Igos Açaí'], [/mateus|matheus/,'Mateus'], [/ceasa/,'Ceasa'], [/arpoador/,'Arpoador'], [/casquinha/,'Casquinhas'],
+  [/mi ?cookies/,'Mi Cookies'], [/fazendaria/,'Fazendaria'], [/renner/,'Renner'], [/c&a/,'C&A'], [/ferreira/,'Ferreira Carnes'],
+  [/caminho saudavel/,'Caminho Saudável'], [/espetinho|casa do espet/,'Espetinho'], [/dona conceicao/,'Dona Conceição'],
+  [/seasa/,'Seasa'], [/mercado dos graos/,'Mercado dos Grãos'], [/pao da hora/,'Pão da Hora'], [/favorita/,'Favorita Padaria'],
+  [/45 burger/,'45 Burger'], [/chiquinho/,'Chiquinho'], [/gelatto|gelato/,'Gelatto e Grano'], [/bengo|bengô/,'Bengô Açaí'],
+  [/tudo e festa/,'Tudo é Festa'], [/\bmdg\b/,'MDG'], [/quitanda/,'Quitandas']
+];
+const RE_NOT_PLACE = /^(oferta|contribui|coopera|negativo|sobra|saldo|nao soube|uber|gasolina|presente|aprovision|reserva|terapia|academia|corte|lavagem|colabor|doacao|caridade|rifa|parcela|fatura|pagamento|taxa|passagem|moto taxi|recarga)/;
+
+function placeOf(desc){
+  const n = normTxt(desc);
+  for (const [re,name] of PLACE_ALIASES) if (re.test(n)) return { key:name, name, known:true };
+  if (!n || RE_NOT_PLACE.test(n)) return null;
+  const w = n.split(' ').slice(0,2).join(' ');
+  return { key:'?'+w, name:w.replace(/\b\w/g,c=>c.toUpperCase()), known:false };
+}
+
+function listExpenses(from, to){
+  const out = [];
+  sortedWeeks().forEach(w => {
+    if (!w.startDate) return;
+    w.expenses.forEach((list,ci) => list.forEach(e => {
+      const d = e.date || w.startDate;
+      if (d < from || d > to) return;
+      if (RE_TRANSP_GASTO.test(e.desc)) return;
+      out.push({ ci, val:e.val, desc:e.desc, date:d, week:w.name });
+    }));
+  });
+  return out;
+}
+
+function realWeekSpent(w){
+  let t = 0;
+  w.expenses.forEach(list => list.forEach(e => { if (!RE_TRANSP_GASTO.test(e.desc)) t += e.val; }));
+  return t;
+}
+
+function showDetail(title, items){
+  const el = document.getElementById('dash-detail');
+  const sorted = [...items].sort((a,b)=> b.val - a.val);
+  const total = sorted.reduce((s,e)=>s+e.val,0);
+  el.innerHTML = `<div class="dash-card"><h3><span>${esc(title)}</span><span class="dash-hint">${sorted.length} lançamento(s) · R$ ${fmt(total)}</span></h3>` +
+    (sorted.map(e => `<div class="detail-row"><span>${CAT_EMOJIS[e.ci]} <span style="color:var(--muted);font-size:11px">${fmtDM(e.date)} ·</span> ${esc(e.desc)}</span><span style="font-weight:700">R$ ${fmt(e.val)}</span></div>`).join('') || '<div style="color:var(--muted);font-size:13px">Nada neste recorte.</div>') +
+    `</div>`;
+  el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function setPlaceSort(v){ placeSort = v; renderReport(); }
+function showPlaceDetail(idx){ const p=_dashItems.places[idx]; if (p) showDetail(p.name, p.items); }
+
 function renderReport() {
   const from = document.getElementById('rep-from').value, to = document.getElementById('rep-to').value;
-  const el = document.getElementById('cycle-report-content');
+  const el = document.getElementById('dash-content');
+  Object.values(_charts).forEach(c => c.destroy()); _charts = {};
+  document.getElementById('dash-detail').innerHTML = '';
   if (!from || !to || from > to) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">Informe um período válido.</p>'; return; }
+  document.getElementById('dash-print-period').textContent = fmtDM(from)+'/'+from.slice(0,4)+' a '+fmtDM(to)+'/'+to.slice(0,4);
+
   const r = computeReport(from, to);
   const pp = previousPeriod(from, to), pr = computeReport(pp.from, pp.to);
-  const box = 'background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px';
-  const title = 'font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase';
-
+  const exps = listExpenses(from, to);
   const diff = r.totalBudget - r.totalSpent;
-  let html = `<div style="${box}"><div style="${title}">${fmtDM(from)} a ${fmtDM(to)}</div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:14px">Gasto real</span><span style="font-size:18px;font-weight:900">R$ ${fmt(r.totalSpent)}</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted)"><span>Orçamento das semanas do período</span><span>R$ ${fmt(r.totalBudget)}</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px"><span>${diff>=0?'Dentro do orçamento por':'Acima do orçamento em'}</span><span style="font-weight:700;color:${diff>=0?'var(--green)':'var(--red)'}">R$ ${fmt(Math.abs(diff))}</span></div>`;
-  if (r.extras) html += `<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px"><span>Entradas extras no período</span><span>+ R$ ${fmt(r.extras)}</span></div>`;
-  html += `</div>`;
-
-  html += `<div style="${box}"><div style="${title}">Comparação com ${fmtDM(pp.from)} a ${fmtDM(pp.to)}</div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span>Total: R$ ${fmt(pr.totalSpent)} → R$ ${fmt(r.totalSpent)}</span>${deltaHtml(r.totalSpent, pr.totalSpent)}</div>`;
-  CAT_NAMES.forEach((n,ci) => {
-    html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px"><span>${CAT_EMOJIS[ci]} ${n}: R$ ${fmt(pr.spentCat[ci])} → R$ ${fmt(r.spentCat[ci])}</span>${deltaHtml(r.spentCat[ci], pr.spentCat[ci])}</div>`;
-  });
-  html += `</div>`;
-
-  html += `<div style="${box}"><div style="${title}">Resultado por categoria</div>`;
-  CAT_NAMES.forEach((n,ci) => {
-    const spent = r.spentCat[ci], limit = r.budgetCat[ci];
-    const pct = limit > 0 ? Math.min(100,(spent/limit)*100) : (spent>0?100:0);
-    const cls = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
-    html += `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px">${CAT_EMOJIS[ci]} ${n}</span><span style="font-size:13px;font-weight:700;color:${spent<=limit?'var(--green)':'var(--red)'}">R$ ${fmt(spent)} / R$ ${fmt(limit)}</span></div><div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div></div>`;
-  });
-  html += `</div>`;
-
-  html += `<div style="${box}"><div style="${title}">Semana a semana</div>`;
-  r.weeks.forEach(x => {
-    const over = x.budget && x.spent > x.budget;
-    html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${over?'🔴':'✅'} ${x.w.name}</span><span style="font-size:13px;font-weight:700;color:${over?'var(--red)':'var(--green)'}">R$ ${fmt(x.spent)}</span></div>`;
-  });
   const full = r.weeks.filter(x => x.inRange);
-  if (full.length > 1) {
-    const best = full.reduce((a,b)=>b.spent<a.spent?b:a), worst = full.reduce((a,b)=>b.spent>a.spent?b:a);
-    html += `<div style="font-size:12px;color:var(--muted);margin-top:8px">📈 Semana mais enxuta: ${best.w.name} (R$ ${fmt(best.spent)})</div><div style="font-size:12px;color:var(--muted);margin-top:4px">📉 Semana mais pesada: ${worst.w.name} (R$ ${fmt(worst.spent)})</div>`;
-  }
-  html += `</div>`;
+  const avgWeek = full.length ? r.totalSpent / full.length : 0;
+  const biggest = exps.reduce((a,b)=> (!a || b.val > a.val) ? b : a, null);
 
-  html += `<div style="font-size:11px;color:var(--muted);line-height:1.5">Débitos e sobras que você transpõe de uma semana para a outra não entram no gasto real` + ((r.transpOut||r.transpIn) ? ` (excluídos: R$ ${fmt(r.transpOut)} em débitos e R$ ${fmt(r.transpIn)} em sobras)` : '') + `. Gastos sem data contam na sexta-feira de início da semana.</div>`;
+  // locais
+  const map = {};
+  exps.forEach(e => {
+    const pl = placeOf(e.desc); if (!pl) return;
+    (map[pl.key] = map[pl.key] || { name:pl.name, known:pl.known, total:0, visits:0, items:[] });
+    map[pl.key].total += e.val; map[pl.key].visits++; map[pl.key].items.push(e);
+  });
+  const places = Object.values(map).filter(p => p.known || p.visits >= 2)
+    .sort((a,b)=> placeSort==='idas' ? (b.visits-a.visits || b.total-a.total) : (b.total-a.total)).slice(0,10);
+  _dashItems.places = places;
+  const maxPlace = places.length ? (placeSort==='idas' ? places[0].visits : places[0].total) : 1;
+
+  let html = `<div class="dash-kpis">
+    <div class="dash-kpi"><div class="dash-kpi-label">Gasto real</div><div class="dash-kpi-value">R$ ${fmt(r.totalSpent)}</div><div class="dash-kpi-sub">${deltaHtml(r.totalSpent, pr.totalSpent)} vs período anterior</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">${diff>=0?'Sobra no orçamento':'Estouro do orçamento'}</div><div class="dash-kpi-value" style="color:${diff>=0?'var(--green)':'var(--red)'}">R$ ${fmt(Math.abs(diff))}</div><div class="dash-kpi-sub">Orçamento: R$ ${fmt(r.totalBudget)}</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">Média por semana</div><div class="dash-kpi-value">R$ ${fmt(avgWeek)}</div><div class="dash-kpi-sub">${full.length} semana(s) iniciada(s) no período</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">Maior gasto</div><div class="dash-kpi-value">R$ ${fmt(biggest?biggest.val:0)}</div><div class="dash-kpi-sub">${biggest?esc(biggest.desc)+' · '+fmtDM(biggest.date):'—'}</div></div>
+  </div>`;
+
+  html += `<div class="dash-card"><h3><span>Gastos por categoria</span><span class="dash-hint no-print">toque numa fatia</span></h3>
+    <div class="dash-chart"><canvas id="ch-cat"></canvas></div><div id="cat-legend" style="margin-top:10px">`;
+  CAT_NAMES.forEach((n,ci) => {
+    const pct = r.totalSpent ? (r.spentCat[ci]/r.totalSpent*100) : 0;
+    html += `<div class="detail-row"><span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${CAT_COLORS[ci]};margin-right:6px"></span>${CAT_EMOJIS[ci]} ${n}</span><span><b>R$ ${fmt(r.spentCat[ci])}</b> <span style="color:var(--muted);font-size:11px">${pct.toFixed(0)}% · orç. R$ ${fmt(r.budgetCat[ci])} · ${deltaHtml(r.spentCat[ci], pr.spentCat[ci])}</span></span></div>`;
+  });
+  html += `</div></div>`;
+
+  html += `<div class="dash-card"><h3><span>Evolução semana a semana</span><span class="dash-hint no-print">toque numa barra</span></h3><div class="dash-chart"><canvas id="ch-week"></canvas></div></div>`;
+
+  html += `<div class="dash-card"><h3><span>Onde mais gastamos</span><span class="dash-toggle no-print"><button class="${placeSort==='valor'?'on':''}" onclick="setPlaceSort('valor')">por valor</button> <button class="${placeSort==='idas'?'on':''}" onclick="setPlaceSort('idas')">por idas</button></span></h3>`;
+  if (!places.length) html += `<div style="color:var(--muted);font-size:13px">Sem locais identificados neste período.</div>`;
+  places.forEach((p,i) => {
+    const w = Math.max(4, (placeSort==='idas' ? p.visits : p.total) / maxPlace * 100);
+    html += `<div class="place-row" onclick="showPlaceDetail(${i})"><div class="place-top"><span>${i+1}. ${esc(p.name)}</span><span><b>R$ ${fmt(p.total)}</b> <span style="color:var(--muted);font-size:11px">· ${p.visits}x</span></span></div><div class="place-bar"><div style="width:${w}%"></div></div></div>`;
+  });
+  html += `<div style="font-size:11px;color:var(--muted);margin-top:8px">O local vem do que você digita na descrição. Nomes que aparecem só uma vez e não são lugares conhecidos ficam de fora.</div></div>`;
+
+  html += `<div style="font-size:11px;color:var(--muted);line-height:1.5">Débitos e sobras transpostos entre semanas não entram no gasto real` + ((r.transpOut||r.transpIn) ? ` (excluídos: R$ ${fmt(r.transpOut)} em débitos e R$ ${fmt(r.transpIn)} em sobras)` : '') + `. Gastos sem data contam na sexta-feira de início da semana. Comparação com ${fmtDM(pp.from)} a ${fmtDM(pp.to)}.</div>`;
   el.innerHTML = html;
+
+  if (typeof Chart === 'undefined') {
+    document.querySelectorAll('.dash-chart').forEach(d => d.innerHTML = '<div style="color:var(--muted);font-size:13px">Gráficos indisponíveis sem internet. Os números acima continuam valendo.</div>');
+    return;
+  }
+  Chart.defaults.color = '#cbd5e1';
+  Chart.defaults.borderColor = '#334155';
+
+  // pizza por categoria
+  _charts.cat = new Chart(document.getElementById('ch-cat'), {
+    type: 'doughnut',
+    data: { labels: CAT_NAMES, datasets: [{ data: r.spentCat.map(v=>+v.toFixed(2)), backgroundColor: CAT_COLORS, borderColor: '#1e293b', borderWidth: 2 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: c => ' R$ '+fmt(c.parsed) } } },
+      onClick: (ev, els) => { if (!els.length) return; const ci = els[0].index; showDetail(CAT_EMOJIS[ci]+' '+CAT_NAMES[ci], exps.filter(e=>e.ci===ci)); } }
+  });
+
+  // evolução semanal (até 12 semanas terminando no fim do período)
+  const wk = sortedWeeks().filter(w => w.startDate && w.startDate <= to).slice(-12);
+  const wkSpent = wk.map(realWeekSpent), wkBudget = wk.map(w => w.limits.reduce((a,b)=>a+b,0));
+  _charts.week = new Chart(document.getElementById('ch-week'), {
+    data: { labels: wk.map(w => 'S'+w.weekNum), datasets: [
+      { type:'bar', label:'Gasto real', data: wkSpent.map(v=>+v.toFixed(2)), backgroundColor: wkSpent.map((v,i)=> v > wkBudget[i] ? '#ef4444' : '#22c55e'), borderRadius: 4 },
+      { type:'line', label:'Orçamento', data: wkBudget, borderColor:'#38bdf8', borderDash:[6,4], pointRadius:0, borderWidth:2 }
+    ] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ boxWidth:12 } }, tooltip:{ callbacks:{ title: it => wk[it[0].dataIndex].name, label: c => ' '+c.dataset.label+': R$ '+fmt(c.parsed.y) } } },
+      scales:{ y:{ beginAtZero:true, ticks:{ callback: v => 'R$ '+v } } },
+      onClick: (ev, els) => { if (!els.length) return; const w = wk[els[0].index]; showDetail(w.name, w.expenses.flatMap((l,ci)=> l.filter(e=>!RE_TRANSP_GASTO.test(e.desc)).map(e=>({ci,val:e.val,desc:e.desc,date:e.date||w.startDate})))); } }
+  });
 }
 
 function exportReportToGemini() {
@@ -1192,7 +1340,6 @@ function exportReportToGemini() {
   lines.push(`Analise este relatório do período dos gastos da família. Responda em português:\n1. Foi um mês responsável? Gastamos mais ou menos que o período anterior?\n2. Qual categoria mais pesou e por quê?\n3. Quais semanas fugiram do padrão?\n4. O que mudar no próximo mês?\n5. Pontos positivos a manter.`);
   document.getElementById('export-text').value = lines.join('\n');
   document.getElementById('export-week-select').style.display = 'none';
-  closeModal('modal-cycle-report');
   document.getElementById('modal-export').classList.remove('hidden');
 }
 
