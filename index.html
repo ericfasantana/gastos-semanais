@@ -192,8 +192,8 @@
 <!-- WEEK NAV -->
 <div class="week-nav" style="flex-direction:column;gap:8px;align-items:stretch">
   <div style="display:flex;gap:8px">
-    <select id="cycle-filter" onchange="renderWeekSelect()" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:13px">
-      <option value="">Todos os ciclos</option>
+    <select id="month-filter" onchange="onMonthFilter(this.value)" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:13px">
+      <option value="">Todos os meses</option>
     </select>
     <button class="btn-new-week" onclick="openNewWeekModal()">+ Semana</button>
   </div>
@@ -215,17 +215,7 @@
   <div class="modal">
     <div class="modal-title">Nova Semana</div>
 
-    <label>Ciclo (mês/ano de referência)</label>
-    <input type="month" id="nw-cycle" onchange="autoFillWeekName()" style="color-scheme:dark;margin-bottom:10px">
-
-    <label>Número da semana no ciclo</label>
-    <select id="nw-num" onchange="autoFillWeekName()">
-      <option value="1">Semana 1</option>
-      <option value="2">Semana 2</option>
-      <option value="3">Semana 3</option>
-      <option value="4">Semana 4</option>
-      <option value="5">Semana 5</option>
-    </select>
+    <div id="nw-info" style="font-size:13px;color:var(--muted);margin-bottom:6px"></div>
 
     <div class="nw-row" style="margin-top:12px">
       <div>
@@ -234,7 +224,7 @@
       </div>
       <div>
         <label>📅 Término (quinta-feira)</label>
-        <input type="date" id="nw-end" onchange="autoFillWeekName()">
+        <input type="date" id="nw-end" readonly>
       </div>
     </div>
 
@@ -286,6 +276,8 @@
     <input type="number" id="ae-value" placeholder="0,00" inputmode="decimal">
     <label>Descrição</label>
     <input type="text" id="ae-desc" placeholder="Ex: Pão de Açúcar, W Carnes...">
+    <label>Data do gasto</label>
+    <input type="date" id="ae-date" style="color-scheme:dark">
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('modal-add-expense')">Cancelar</button>
       <button class="btn-primary" onclick="confirmAddExpense()">Lançar</button>
@@ -297,20 +289,11 @@
 <div class="modal-overlay hidden" id="modal-edit-week">
   <div class="modal">
     <div class="modal-title">✏️ Editar Semana</div>
-    <label>Ciclo (mês/ano de referência)</label>
-    <input type="month" id="ew-cycle" style="color-scheme:dark;margin-bottom:10px">
     <label>Nome da semana</label>
-    <input type="text" id="ew-name" placeholder="Ex: Semana 01 - 13/06 a 19/06">
-    <label>Número da semana no ciclo</label>
-    <select id="ew-num">
-      <option value="1">Semana 1</option>
-      <option value="2">Semana 2</option>
-      <option value="3">Semana 3</option>
-      <option value="4">Semana 4</option>
-      <option value="5">Semana 5</option>
-    </select>
-    <label>Data de início (sexta-feira) <span style="color:var(--muted);font-size:11px">— corrige o carryover</span></label>
+    <input type="text" id="ew-name">
+    <label>Data de início (sexta-feira)</label>
     <input type="date" id="ew-start" style="color-scheme:dark;margin-bottom:4px">
+    <div id="ew-info" style="font-size:12px;color:var(--muted);margin:6px 0"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('modal-edit-week')">Cancelar</button>
       <button class="btn-primary" onclick="confirmEditWeek()">Salvar</button>
@@ -358,16 +341,20 @@
   </div>
 </div>
 
-<!-- MODAL: RELATÓRIO DO CICLO -->
+<!-- MODAL: RELATÓRIO DO MÊS -->
 <div class="modal-overlay hidden" id="modal-cycle-report">
   <div class="modal" style="max-height:90vh;overflow-y:auto">
-    <div class="modal-title">📊 Relatório do Ciclo</div>
-    <label>Selecione as semanas do ciclo</label>
-    <div id="cycle-week-checkboxes" style="display:flex;flex-direction:column;gap:8px;margin:10px 0"></div>
+    <div class="modal-title">📊 Relatório do Mês</div>
+    <label>Mês</label>
+    <select id="rep-month" onchange="onRepMonth()"></select>
+    <div class="nw-row" style="margin-top:8px">
+      <div><label>De</label><input type="date" id="rep-from" onchange="renderReport()" style="color-scheme:dark"></div>
+      <div><label>Até</label><input type="date" id="rep-to" onchange="renderReport()" style="color-scheme:dark"></div>
+    </div>
     <div id="cycle-report-content" style="margin-top:16px"></div>
     <div class="modal-btns" style="margin-top:12px">
       <button class="btn-cancel" onclick="closeModal('modal-cycle-report')">Fechar</button>
-      <button class="btn-primary" onclick="exportCycleToGemini()">🤖 Exportar Ciclo p/ Gemini</button>
+      <button class="btn-primary" onclick="exportReportToGemini()">🤖 Exportar p/ Gemini</button>
     </div>
   </div>
 </div>
@@ -439,6 +426,13 @@ function initFirebase(cfg) {
       if (data) {
         const incoming = JSON.parse(data);
         state.weeks = incoming.weeks || [];
+        if (normalizeWeeks(state.weeks)) {
+          // backup único dos dados originais antes de gravar o novo formato
+          fbDb.ref('backup_pre_semanas_do_ano').once('value').then(b => {
+            if (!b.exists()) fbDb.ref('backup_pre_semanas_do_ano').set(data);
+          });
+          save();
+        }
         // Load pinned week or last week
         const pinned = localStorage.getItem('pinned_week');
         if (pinned && state.weeks.find(w => w.id === pinned)) {
@@ -470,7 +464,7 @@ function save() {
 
 function loadLocal() {
   const raw = localStorage.getItem('gastos_state');
-  if (raw) { try { state = JSON.parse(raw); } catch(e) {} }
+  if (raw) { try { state = JSON.parse(raw); if (normalizeWeeks(state.weeks||[])) save(); } catch(e) {} }
 }
 
 function showSyncStatus(msg) {
@@ -501,6 +495,67 @@ function appInit() {
   }
 }
 
+// ─── DATAS / SEMANAS DO ANO ──────────────────────────────────────────────────
+// Semana vai de sexta a quinta. Semana 1 do ano = semana que começa na 1ª sexta de janeiro.
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAY_MS = 86400000;
+function isoToUTC(s){ const [y,m,d]=s.split('-').map(Number); return Date.UTC(y,m-1,d); }
+function utcToISO(ms){ return new Date(ms).toISOString().slice(0,10); }
+function addDaysISO(s,n){ return utcToISO(isoToUTC(s)+n*DAY_MS); }
+function weekdayISO(s){ return new Date(isoToUTC(s)).getUTCDay(); }
+function snapToFriday(s){ return addDaysISO(s,(5-weekdayISO(s)+7)%7); }
+function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yearWeekNumber(startISO){
+  const y=+startISO.slice(0,4);
+  const jan1=Date.UTC(y,0,1);
+  const ff=jan1+((5-new Date(jan1).getUTCDay()+7)%7)*DAY_MS;
+  return Math.floor((isoToUTC(startISO)-ff)/(7*DAY_MS))+1;
+}
+function fmtDM(iso){ const [y,m,d]=iso.split('-'); return d+'/'+m; }
+function weekLabel(startISO){
+  return 'Sem. '+String(yearWeekNumber(startISO)).padStart(2,'0')+' ('+fmtDM(startISO)+' a '+fmtDM(addDaysISO(startISO,6))+')';
+}
+function monthKeyOf(iso){ return iso.slice(0,7); }
+function monthLabel(key){ const [y,m]=key.split('-'); return MESES[+m-1]+'/'+y; }
+function monthRange(key){
+  const [y,m]=key.split('-').map(Number);
+  const from=key+'-01';
+  const to=utcToISO(Date.UTC(y,m,0));
+  return {from,to};
+}
+function deriveStartDate(w){
+  if (w.startDate && /^\d{4}-\d{2}-\d{2}$/.test(w.startDate)) return snapToFriday(w.startDate);
+  const m = (w.name||'').match(/(\d{2})\/(\d{2})/);
+  if (!m) return null;
+  let year = new Date().getFullYear();
+  const y4 = (w.name||'').match(/\b(20\d{2})\b/);
+  if (y4) year = +y4[1];
+  else if (w.cycle && /^\d{4}-\d{2}$/.test(w.cycle)) year = +w.cycle.slice(0,4);
+  return snapToFriday(year+'-'+m[2]+'-'+m[1]);
+}
+function sortedWeeks(){
+  return [...state.weeks].sort((a,b)=>(a.startDate||'9999').localeCompare(b.startDate||'9999'));
+}
+// Ajusta semanas antigas ao novo modelo (datas de sexta a quinta, nº da semana no ano, sem ciclo).
+// Não mexe em gastos, entradas nem limites. Retorna true se algo mudou.
+function normalizeWeeks(weeks){
+  let changed=false;
+  weeks.forEach(w=>{
+    if (!Array.isArray(w.saldoEntries)) { w.saldoEntries=[]; changed=true; }
+    if (!Array.isArray(w.expenses)) { w.expenses=[[],[],[],[],[]]; changed=true; }
+    const start=deriveStartDate(w);
+    if (start){
+      const end=addDaysISO(start,6), num=yearWeekNumber(start), name=weekLabel(start);
+      if (w.startDate!==start){ w.startDate=start; changed=true; }
+      if (w.endDate!==end){ w.endDate=end; changed=true; }
+      if (w.weekNum!==num){ w.weekNum=num; changed=true; }
+      if (w.name!==name){ w.name=name; changed=true; }
+    }
+    if ('cycle' in w){ delete w.cycle; changed=true; }
+  });
+  return changed;
+}
+
 // ─── COMPUTED ────────────────────────────────────────────────────────────────
 function totalSaldo(week) {
   return week.saldoEntries.reduce((s,e) => s + e.val, 0);
@@ -521,80 +576,43 @@ function weekTotal(week) {
 }
 
 // ─── WEEK MANAGEMENT ─────────────────────────────────────────────────────────
-function fmtDate(dateStr) {
-  // "2026-05-29" → "29/05"
-  if (!dateStr) return '';
-  const [y, m, d] = dateStr.split('-');
-  return `${d}/${m}`;
-}
+function fmtDate(dateStr) { return dateStr ? fmtDM(dateStr) : ''; }
 
-function fmtCycle(cycleStr) {
-  // "2026-05" → "Mai/26"
-  if (!cycleStr) return '';
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const [y, m] = cycleStr.split('-');
-  return `${months[parseInt(m)-1]}/${y.slice(2)}`;
-}
-
-function fmtCycle(cycleStr) {
-  if (!cycleStr) return '';
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const [y, m] = cycleStr.split('-');
-  return `${months[parseInt(m)-1]}/${y.slice(2)}`;
+function updateNewWeekInfo(){
+  const start=document.getElementById('nw-start').value;
+  const el=document.getElementById('nw-info');
+  if(!start){ el.textContent=''; return; }
+  const fri=snapToFriday(start);
+  let t='Semana nº '+yearWeekNumber(fri)+' de '+fri.slice(0,4)+' · '+MESES[+fri.slice(5,7)-1];
+  if (fri!==start) t+=' · ⚠️ não é sexta-feira, será ajustada para '+fmtDM(fri);
+  el.textContent=t;
 }
 
 function autoFillWeekName() {
-  const num = document.getElementById('nw-num').value;
   const start = document.getElementById('nw-start').value;
-  const end = document.getElementById('nw-end').value;
-  const cycle = document.getElementById('nw-cycle') ? document.getElementById('nw-cycle').value : '';
-  let name = '';
-  if (cycle) name += `Ciclo ${fmtCycle(cycle)} — `;
-  name += `Sem. ${num.toString().padStart(2,'0')}`;
-  if (start) name += ` (${fmtDate(start)}`;
-  if (end) name += ` a ${fmtDate(end)})`;
-  document.getElementById('nw-name').value = name;
+  if (!start) return;
+  const fri = snapToFriday(start);
+  document.getElementById('nw-end').value = addDaysISO(fri,6);
+  document.getElementById('nw-name').value = weekLabel(fri);
+  updateNewWeekInfo();
 }
 
 function openNewWeekModal() {
-  // Suggest next week number
-  const nums = state.weeks.map(w => w.weekNum);
-  let suggested = 1;
-  if (nums.length > 0) {
-    const last = nums[nums.length - 1];
-    suggested = last >= 5 ? 1 : last + 1;
-  }
-  document.getElementById('nw-num').value = suggested;
-
   document.getElementById('carryover-info').innerHTML = '';
-
-  // Pre-fill cycle with current month
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  if (document.getElementById('nw-cycle')) {
-    document.getElementById('nw-cycle').value = `${yyyy}-${mm}`;
-  }
-
-  // Pre-fill: next Friday as start, following Thursday as end
-  const dayOfWeek = today.getDay();
-  const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7;
-  const nextFriday = new Date(today);
-  nextFriday.setDate(today.getDate() + daysUntilFriday);
-  const nextThursday = new Date(nextFriday);
-  nextThursday.setDate(nextFriday.getDate() + 6);
-
-  const toInputVal = d => d.toISOString().split('T')[0];
-  document.getElementById('nw-start').value = toInputVal(nextFriday);
-  document.getElementById('nw-end').value = toInputVal(nextThursday);
+  const sorted = sortedWeeks();
+  const last = sorted.filter(w=>w.startDate).pop();
+  const start = last ? addDaysISO(last.startDate,7) : snapToFriday(todayISO());
+  document.getElementById('nw-start').value = start;
+  ['800','300','125','100','215'].forEach((v,i)=>{ document.getElementById('nw-l'+i).value = v; });
   autoFillWeekName();
-
   document.getElementById('modal-new-week').classList.remove('hidden');
 }
 
 function createWeek() {
-  const name = document.getElementById('nw-name').value.trim() || `Semana ${document.getElementById('nw-num').value}`;
-  const weekNum = parseInt(document.getElementById('nw-num').value);
+  const rawStart = document.getElementById('nw-start').value;
+  if (!rawStart) { alert('Informe a data de início.'); return; }
+  const startDate = snapToFriday(rawStart);
+  if (state.weeks.some(w => w.startDate === startDate)) { alert('Já existe uma semana começando em '+fmtDM(startDate)+'.'); return; }
   const limits = [
     parseFloat(document.getElementById('nw-l0').value) || 800,
     parseFloat(document.getElementById('nw-l1').value) || 300,
@@ -602,28 +620,20 @@ function createWeek() {
     parseFloat(document.getElementById('nw-l3').value) || 100,
     parseFloat(document.getElementById('nw-l4').value) || 215,
   ];
-
-  const startDate = document.getElementById('nw-start').value || '';
-  const cycle = document.getElementById('nw-cycle') ? document.getElementById('nw-cycle').value || '' : '';
-
-  // Carryover gerenciado manualmente pelo usuário
-  const carryover = null;
-  const initialExpenses = [[], [], [], [], []];
-
   const week = {
     id: generateId(),
-    name,
-    weekNum,
+    name: weekLabel(startDate),
+    weekNum: yearWeekNumber(startDate),
     startDate,
-    cycle,
+    endDate: addDaysISO(startDate,6),
     saldoEntries: [],
     limits,
-    expenses: initialExpenses,
-    carryover
+    expenses: [[], [], [], [], []],
+    carryover: null
   };
-
   state.weeks.push(week);
   state.currentWeekId = week.id;
+  monthFilterValue = monthKeyOf(startDate);
   save();
   closeModal('modal-new-week');
   renderWeekSelect();
@@ -671,6 +681,13 @@ function openAddExpenseModal(weekId, catIdx) {
   sel.innerHTML = CAT_NAMES.map((n,i) => `<option value="${i}" ${i===catIdx?'selected':''}>${CAT_EMOJIS[i]} ${n}</option>`).join('');
   document.getElementById('ae-value').value = '';
   document.getElementById('ae-desc').value = '';
+  const wk = state.weeks.find(w => w.id === weekId);
+  const dEl = document.getElementById('ae-date');
+  if (wk && wk.startDate) {
+    const end = addDaysISO(wk.startDate,6), t = todayISO();
+    dEl.min = wk.startDate; dEl.max = end;
+    dEl.value = (t >= wk.startDate && t <= end) ? t : wk.startDate;
+  } else { dEl.removeAttribute('min'); dEl.removeAttribute('max'); dEl.value = todayISO(); }
   document.getElementById('modal-add-expense').classList.remove('hidden');
   setTimeout(() => document.getElementById('ae-value').focus(), 100);
 }
@@ -682,7 +699,8 @@ function confirmAddExpense() {
   if (!val || val <= 0) return;
   const week = state.weeks.find(w => w.id === _addExpenseWeekId);
   if (!week) return;
-  week.expenses[catIdx].push({ val, desc });
+  const date = document.getElementById('ae-date').value || week.startDate || todayISO();
+  week.expenses[catIdx].push({ val, desc, date });
   save();
   closeModal('modal-add-expense');
   renderMain();
@@ -701,60 +719,44 @@ function fmt(n) {
   return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+let monthFilterValue = null; // null = ainda não inicializado; '' = todos os meses
+
+function onMonthFilter(v) {
+  monthFilterValue = v;
+  const filtered = sortedWeeks().filter(w => !v || (w.startDate && monthKeyOf(w.startDate) === v));
+  if (filtered.length && !filtered.some(w => w.id === state.currentWeekId)) {
+    loadWeek(filtered[filtered.length-1].id);
+  }
+  renderWeekSelect();
+}
+
 function renderWeekSelect() {
   const sel = document.getElementById('week-select');
-  const cycleFilter = document.getElementById('cycle-filter');
+  const monthFilter = document.getElementById('month-filter');
 
   if (state.weeks.length === 0) {
     sel.innerHTML = '<option value="">Nenhuma semana criada</option>';
-    if (cycleFilter) cycleFilter.innerHTML = '<option value="">Todos os ciclos</option>';
+    if (monthFilter) monthFilter.innerHTML = '<option value="">Todos os meses</option>';
     return;
   }
 
-  // Sort all weeks chronologically
-  const sorted = [...state.weeks].sort((a, b) => {
-    const ca = (a.startDate || '9999-99-99');
-    const cb = (b.startDate || '9999-99-99');
-    return ca.localeCompare(cb);
-  });
+  const sorted = sortedWeeks();
 
-  // Build unique cycle list from the 'cycle' field (YYYY-MM) saved on each week
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  function cycleKeyToLabel(key) {
-    if (!key) return '';
-    const [y, m] = key.split('-');
-    return `${months[parseInt(m)-1]}/${y.slice(2)}`;
+  if (monthFilterValue === null) {
+    const cw = state.weeks.find(w => w.id === state.currentWeekId);
+    monthFilterValue = (cw && cw.startDate) ? monthKeyOf(cw.startDate) : '';
   }
 
-  // Get cycle key for a week: use saved cycle field, fallback to startDate, then parse name
-  function weekCycleKey(w) {
-    if (w.cycle) return w.cycle;
-    if (w.startDate) return w.startDate.slice(0, 7);
-    const match = w.name.match(/(\d{2})\/(\d{2})\/(\d{4})|(\d{2})\/(\d{2})/);
-    if (match) {
-      const day = match[1] || match[4];
-      const mon = match[2] || match[5];
-      const yr = match[3] || new Date().getFullYear();
-      return `${yr}-${mon}`;
-    }
-    return null;
-  }
+  const keys = [...new Set(sorted.filter(w => w.startDate).map(w => monthKeyOf(w.startDate)))].sort().reverse();
+  monthFilter.innerHTML = '<option value="">Todos os meses</option>' +
+    keys.map(k => `<option value="${k}" ${k === monthFilterValue ? 'selected' : ''}>${monthLabel(k)}</option>`).join('');
 
-  if (cycleFilter) {
-    const cycleKeys = [...new Set(sorted.map(weekCycleKey).filter(Boolean))].sort();
-    const currentFilter = cycleFilter.value;
-    cycleFilter.innerHTML = '<option value="">Todos os ciclos</option>' +
-      cycleKeys.map(k => `<option value="${k}" ${k === currentFilter ? 'selected' : ''}>${cycleKeyToLabel(k)}</option>`).join('');
-  }
-
-  // Filter weeks by selected cycle key
-  const selectedCycle = cycleFilter ? cycleFilter.value : '';
-  const filtered = selectedCycle
-    ? sorted.filter(w => weekCycleKey(w) === selectedCycle)
+  const filtered = monthFilterValue
+    ? sorted.filter(w => w.startDate && monthKeyOf(w.startDate) === monthFilterValue)
     : sorted;
 
   if (filtered.length === 0) {
-    sel.innerHTML = '<option value="">Nenhuma semana neste ciclo</option>';
+    sel.innerHTML = '<option value="">Nenhuma semana neste mês</option>';
     return;
   }
 
@@ -842,7 +844,7 @@ function renderMain() {
 
     week.expenses[ci].forEach((exp, ei) => {
       html += `<div class="expense-item">
-        <span class="expense-desc">${exp.desc}</span>
+        <span class="expense-desc">${exp.date ? '<span style="color:var(--muted);font-size:11px">'+fmtDM(exp.date)+' · </span>' : ''}${exp.desc}</span>
         <span class="expense-val">− R$ ${fmt(exp.val)}</span>
         <button class="expense-del" onclick="deleteExpense('${week.id}',${ci},${ei})">×</button>
       </div>`;
@@ -893,7 +895,7 @@ function renderMain() {
     <button class="btn-share" onclick="openExportModal('${week.id}')">🤖 Exportar p/ Gemini</button>
   </div>
   <div class="share-section" style="margin-top:0">
-    <button class="btn-share" onclick="openCycleReport()">📊 Relatório do Ciclo</button>
+    <button class="btn-share" onclick="openMonthReport()">📊 Relatório do Mês</button>
     <button class="btn-share" onclick="openShareModal()">📤 Compartilhar</button>
   </div>`;
 
@@ -1006,10 +1008,9 @@ function buildWeekExtract(week, includePastHistory) {
 
   // Histórico
   if (includePastHistory) {
-    const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
-    const pastWeeks = sorted.filter(w => w.id !== week.id && (!w.startDate || !week.startDate || w.startDate < week.startDate));
+    const pastWeeks = sortedWeeks().filter(w => w.id !== week.id && w.startDate && week.startDate && w.startDate < week.startDate).slice(-4);
     if (pastWeeks.length > 0) {
-      lines.push(`\n📅 SEMANAS ANTERIORES DO CICLO`);
+      lines.push(`\n📅 ÚLTIMAS SEMANAS ANTERIORES`);
       pastWeeks.forEach(pw => {
         const pt = weekTotal(pw);
         const icon = pt >= 0 ? '✅' : '🔴';
@@ -1036,8 +1037,9 @@ function refreshExportText() {
 
 function openExportModal(weekId) {
   // Popula o seletor com todas as semanas (cronológica)
-  const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+  const sorted = sortedWeeks();
   const sel = document.getElementById('export-week-select');
+  sel.style.display = '';
   sel.innerHTML = sorted.map(w =>
     `<option value="${w.id}" ${w.id === weekId ? 'selected' : ''}>${w.name}</option>`
   ).join('');
@@ -1048,134 +1050,148 @@ function openExportModal(weekId) {
   document.getElementById('modal-export').classList.remove('hidden');
 }
 
-// ─── CYCLE REPORT ─────────────────────────────────────────────────────────────
-function openCycleReport() {
-  const sorted = [...state.weeks].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
-  const el = document.getElementById('cycle-week-checkboxes');
-  el.innerHTML = sorted.map(w => `
-    <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer">
-      <input type="checkbox" value="${w.id}" checked style="width:18px;height:18px;accent-color:var(--accent)">
-      ${w.name}
-    </label>
-  `).join('');
-  el.querySelectorAll('input').forEach(cb => cb.addEventListener('change', renderCycleReport));
-  renderCycleReport();
+// ─── RELATÓRIO DO MÊS ─────────────────────────────────────────────────────────
+const RE_TRANSP_GASTO = /negativo|sobra negativa|saldo negativo/i;       // débito transposto da semana anterior
+const RE_TRANSP_ENTRADA = /sobra|saldo positivo|saldo que ficou/i;       // sobra transposta da semana anterior
+
+function computeReport(from, to) {
+  const r = { from, to, spentCat:[0,0,0,0,0], budgetCat:[0,0,0,0,0], extras:0, transpOut:0, transpIn:0, weeks:[] };
+  sortedWeeks().forEach(w => {
+    if (!w.startDate) return;
+    const inRange = w.startDate >= from && w.startDate <= to;
+    let wSpent = 0;
+    w.expenses.forEach((list, ci) => list.forEach(e => {
+      const d = e.date || w.startDate;
+      if (d < from || d > to) return;
+      if (RE_TRANSP_GASTO.test(e.desc)) { r.transpOut += e.val; return; }
+      r.spentCat[ci] += e.val; wSpent += e.val;
+    }));
+    if (inRange) {
+      w.limits.forEach((l,ci) => r.budgetCat[ci] += l);
+      w.saldoEntries.forEach(e => { if (RE_TRANSP_ENTRADA.test(e.desc)) r.transpIn += e.val; else r.extras += e.val; });
+    }
+    if (inRange || wSpent > 0) r.weeks.push({ w, spent: wSpent, budget: inRange ? w.limits.reduce((a,b)=>a+b,0) : 0, inRange });
+  });
+  r.totalSpent = r.spentCat.reduce((a,b)=>a+b,0);
+  r.totalBudget = r.budgetCat.reduce((a,b)=>a+b,0);
+  return r;
+}
+
+function previousPeriod(from, to) {
+  const mk = monthKeyOf(from), rng = monthRange(mk);
+  if (from === rng.from && to === rng.to) {
+    const [y,m] = mk.split('-').map(Number);
+    const pk = m === 1 ? (y-1)+'-12' : y+'-'+String(m-1).padStart(2,'0');
+    return monthRange(pk);
+  }
+  const len = Math.round((isoToUTC(to)-isoToUTC(from))/DAY_MS)+1;
+  const pTo = addDaysISO(from,-1);
+  return { from: addDaysISO(pTo,-(len-1)), to: pTo };
+}
+
+function openMonthReport() {
+  const keys = [...new Set(sortedWeeks().filter(w=>w.startDate).map(w=>monthKeyOf(w.startDate)))].sort().reverse();
+  if (!keys.length) { alert('Nenhuma semana cadastrada.'); return; }
+  const cw = state.weeks.find(w => w.id === state.currentWeekId);
+  const cur = (cw && cw.startDate) ? monthKeyOf(cw.startDate) : keys[0];
+  document.getElementById('rep-month').innerHTML = keys.map(k => `<option value="${k}" ${k===cur?'selected':''}>${monthLabel(k)}</option>`).join('');
+  onRepMonth();
   document.getElementById('modal-cycle-report').classList.remove('hidden');
 }
 
-function getSelectedWeeks() {
-  const checked = document.querySelectorAll('#cycle-week-checkboxes input:checked');
-  const ids = [...checked].map(cb => cb.value);
-  return state.weeks.filter(w => ids.includes(w.id))
-    .sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+function onRepMonth() {
+  const rng = monthRange(document.getElementById('rep-month').value);
+  document.getElementById('rep-from').value = rng.from;
+  document.getElementById('rep-to').value = rng.to;
+  renderReport();
 }
 
-function renderCycleReport() {
-  const weeks = getSelectedWeeks();
+function pctDelta(cur, prev) {
+  if (!prev) return '';
+  const p = ((cur-prev)/prev)*100;
+  return ` (${p>=0?'+':''}${p.toFixed(0)}%)`;
+}
+function deltaHtml(cur, prev, label) {
+  const d = cur - prev;
+  const color = d > 0.005 ? 'var(--red)' : 'var(--green)';
+  return `<span style="color:${color};font-weight:700">${d>=0?'+':'−'} R$ ${fmt(Math.abs(d))}${pctDelta(cur,prev)}</span>`;
+}
+
+function renderReport() {
+  const from = document.getElementById('rep-from').value, to = document.getElementById('rep-to').value;
   const el = document.getElementById('cycle-report-content');
-  if (weeks.length === 0) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">Selecione ao menos uma semana.</p>'; return; }
+  if (!from || !to || from > to) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">Informe um período válido.</p>'; return; }
+  const r = computeReport(from, to);
+  const pp = previousPeriod(from, to), pr = computeReport(pp.from, pp.to);
+  const box = 'background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px';
+  const title = 'font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase';
 
-  // Totals per category
-  const totalSpentPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + catSpent(w,ci), 0));
-  const totalLimitPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + w.limits[ci], 0));
-  const cycleTotal = weeks.reduce((s,w) => s + weekTotal(w), 0);
+  const diff = r.totalBudget - r.totalSpent;
+  let html = `<div style="${box}"><div style="${title}">${fmtDM(from)} a ${fmtDM(to)}</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:14px">Gasto real</span><span style="font-size:18px;font-weight:900">R$ ${fmt(r.totalSpent)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted)"><span>Orçamento das semanas do período</span><span>R$ ${fmt(r.totalBudget)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px"><span>${diff>=0?'Dentro do orçamento por':'Acima do orçamento em'}</span><span style="font-weight:700;color:${diff>=0?'var(--green)':'var(--red)'}">R$ ${fmt(Math.abs(diff))}</span></div>`;
+  if (r.extras) html += `<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px"><span>Entradas extras no período</span><span>+ R$ ${fmt(r.extras)}</span></div>`;
+  html += `</div>`;
 
-  // Best and worst week
-  const weekTotals = weeks.map(w => ({ name: w.name, total: weekTotal(w) }));
-  const best = weekTotals.reduce((a,b) => b.total > a.total ? b : a);
-  const worst = weekTotals.reduce((a,b) => b.total < a.total ? b : a);
+  html += `<div style="${box}"><div style="${title}">Comparação com ${fmtDM(pp.from)} a ${fmtDM(pp.to)}</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span>Total: R$ ${fmt(pr.totalSpent)} → R$ ${fmt(r.totalSpent)}</span>${deltaHtml(r.totalSpent, pr.totalSpent)}</div>`;
+  CAT_NAMES.forEach((n,ci) => {
+    html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px"><span>${CAT_EMOJIS[ci]} ${n}: R$ ${fmt(pr.spentCat[ci])} → R$ ${fmt(r.spentCat[ci])}</span>${deltaHtml(r.spentCat[ci], pr.spentCat[ci])}</div>`;
+  });
+  html += `</div>`;
 
-  let html = `<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px">`;
-  html += `<div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase">Resultado por Categoria</div>`;
-
-  CAT_NAMES.forEach((name, ci) => {
-    const spent = totalSpentPerCat[ci];
-    const limit = totalLimitPerCat[ci];
-    const pct = limit > 0 ? Math.min(100, (spent/limit)*100) : 0;
+  html += `<div style="${box}"><div style="${title}">Resultado por categoria</div>`;
+  CAT_NAMES.forEach((n,ci) => {
+    const spent = r.spentCat[ci], limit = r.budgetCat[ci];
+    const pct = limit > 0 ? Math.min(100,(spent/limit)*100) : (spent>0?100:0);
     const cls = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
-    const balColor = spent <= limit ? 'var(--green)' : 'var(--red)';
-    html += `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:13px">${CAT_EMOJIS[ci]} ${name}</span>
-        <span style="font-size:13px;font-weight:700;color:${balColor}">R$ ${fmt(spent)} / R$ ${fmt(limit)}</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
-    </div>`;
+    html += `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px">${CAT_EMOJIS[ci]} ${n}</span><span style="font-size:13px;font-weight:700;color:${spent<=limit?'var(--green)':'var(--red)'}">R$ ${fmt(spent)} / R$ ${fmt(limit)}</span></div><div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div></div>`;
   });
   html += `</div>`;
 
-  // Week by week
-  html += `<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px">`;
-  html += `<div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase">Semana a Semana</div>`;
-  weeks.forEach(w => {
-    const t = weekTotal(w);
-    const color = t >= 0 ? 'var(--green)' : 'var(--red)';
-    const icon = t >= 0 ? '✅' : '🔴';
-    html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px">${icon} ${w.name}</span>
-      <span style="font-size:13px;font-weight:700;color:${color}">R$ ${fmt(t)}</span>
-    </div>`;
+  html += `<div style="${box}"><div style="${title}">Semana a semana</div>`;
+  r.weeks.forEach(x => {
+    const over = x.budget && x.spent > x.budget;
+    html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${over?'🔴':'✅'} ${x.w.name}</span><span style="font-size:13px;font-weight:700;color:${over?'var(--red)':'var(--green)'}">R$ ${fmt(x.spent)}</span></div>`;
   });
+  const full = r.weeks.filter(x => x.inRange);
+  if (full.length > 1) {
+    const best = full.reduce((a,b)=>b.spent<a.spent?b:a), worst = full.reduce((a,b)=>b.spent>a.spent?b:a);
+    html += `<div style="font-size:12px;color:var(--muted);margin-top:8px">📈 Semana mais enxuta: ${best.w.name} (R$ ${fmt(best.spent)})</div><div style="font-size:12px;color:var(--muted);margin-top:4px">📉 Semana mais pesada: ${worst.w.name} (R$ ${fmt(worst.spent)})</div>`;
+  }
   html += `</div>`;
 
-  // Highlights
-  const cycleColor = cycleTotal >= 0 ? 'var(--green)' : 'var(--red)';
-  html += `<div style="background:var(--card2);border-radius:10px;padding:12px">
-    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:14px;font-weight:700">Saldo Total do Ciclo</span>
-      <span style="font-size:18px;font-weight:900;color:${cycleColor}">R$ ${fmt(cycleTotal)}</span>
-    </div>
-    <div style="font-size:12px;color:var(--muted)">📈 Melhor semana: ${best.name} (R$ ${fmt(best.total)})</div>
-    <div style="font-size:12px;color:var(--muted);margin-top:4px">📉 Semana mais pesada: ${worst.name} (R$ ${fmt(worst.total)})</div>
-  </div>`;
-
+  html += `<div style="font-size:11px;color:var(--muted);line-height:1.5">Débitos e sobras que você transpõe de uma semana para a outra não entram no gasto real` + ((r.transpOut||r.transpIn) ? ` (excluídos: R$ ${fmt(r.transpOut)} em débitos e R$ ${fmt(r.transpIn)} em sobras)` : '') + `. Gastos sem data contam na sexta-feira de início da semana.</div>`;
   el.innerHTML = html;
 }
 
-function exportCycleToGemini() {
-  const weeks = getSelectedWeeks();
-  if (weeks.length === 0) return;
-
-  const totalSpentPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + catSpent(w,ci), 0));
-  const totalLimitPerCat = CAT_NAMES.map((_,ci) => weeks.reduce((s,w) => s + w.limits[ci], 0));
-  const cycleTotal = weeks.reduce((s,w) => s + weekTotal(w), 0);
-
+function exportReportToGemini() {
+  const from = document.getElementById('rep-from').value, to = document.getElementById('rep-to').value;
+  if (!from || !to || from > to) return;
+  const r = computeReport(from, to);
+  const pp = previousPeriod(from, to), pr = computeReport(pp.from, pp.to);
+  const dl = (c,p) => { const d=c-p; return `${d>=0?'+':'-'}R$ ${fmt(Math.abs(d))}${p?` (${d>=0?'+':''}${(d/p*100).toFixed(0)}%)`:''}`; };
   let lines = [];
   lines.push(`╔════════════════════════════════════╗`);
-  lines.push(`  📊 EXTRATO DO CICLO`);
-  lines.push(`  ${weeks[0]?.name || ''} → ${weeks[weeks.length-1]?.name || ''}`);
+  lines.push(`  📊 RELATÓRIO DO PERÍODO`);
+  lines.push(`  ${fmtDM(from)} a ${fmtDM(to)}`);
   lines.push(`╚════════════════════════════════════╝`);
-
-  lines.push(`\n📋 TOTAL POR CATEGORIA NO CICLO`);
-  CAT_NAMES.forEach((name, ci) => {
-    const spent = totalSpentPerCat[ci];
-    const limit = totalLimitPerCat[ci];
-    const pct = limit > 0 ? (spent/limit)*100 : 0;
-    const status = catStatus(pct);
-    lines.push(`${status} ${CAT_EMOJIS[ci]} ${name}: R$ ${fmt(spent)} de R$ ${fmt(limit)} (${pct.toFixed(0)}%)`);
+  lines.push(`\n💸 Gasto real: R$ ${fmt(r.totalSpent)} | Orçamento das semanas: R$ ${fmt(r.totalBudget)}`);
+  lines.push(`📈 Período anterior (${fmtDM(pp.from)} a ${fmtDM(pp.to)}): R$ ${fmt(pr.totalSpent)} → variação ${dl(r.totalSpent, pr.totalSpent)}`);
+  lines.push(`\n📋 POR CATEGORIA (gasto / orçamento | anterior | variação)`);
+  CAT_NAMES.forEach((n,ci) => {
+    const pct = r.budgetCat[ci] > 0 ? (r.spentCat[ci]/r.budgetCat[ci])*100 : 0;
+    lines.push(`${catStatus(pct)} ${CAT_EMOJIS[ci]} ${n}: R$ ${fmt(r.spentCat[ci])} / R$ ${fmt(r.budgetCat[ci])} (${pct.toFixed(0)}%) | ant. R$ ${fmt(pr.spentCat[ci])} | ${dl(r.spentCat[ci], pr.spentCat[ci])}`);
   });
-
   lines.push(`\n📅 SEMANA A SEMANA`);
-  weeks.forEach(w => {
-    const t = weekTotal(w);
-    const icon = t >= 0 ? '✅' : '🔴';
-    lines.push(`${icon} ${w.name}: R$ ${fmt(t)}`);
-    CAT_NAMES.forEach((_,ci) => {
-      const spent = catSpent(w,ci);
-      if (spent > 0) lines.push(`   • ${CAT_NAMES[ci]}: R$ ${fmt(spent)}`);
-    });
-  });
-
-  const resultIcon = cycleTotal >= 0 ? '✅' : '🔴';
-  lines.push(`\n${'─'.repeat(40)}`);
-  lines.push(`${resultIcon} SALDO FINAL DO CICLO: R$ ${fmt(cycleTotal)}`);
-
-  lines.push(`\n${'═'.repeat(40)}`);
-  lines.push(`🤖 INSTRUÇÃO PARA O GEMINI`);
-  lines.push(`${'═'.repeat(40)}`);
-  lines.push(`Analise este extrato de ciclo completo (${weeks.length} semanas) dos meus gastos familiares. Responda em português:\n1. Avaliação geral do ciclo — foi um bom mês financeiramente?\n2. Qual categoria mais comprometeu o orçamento e por quê?\n3. Comparativo entre as semanas — houve evolução ou piora?\n4. O que devemos fazer diferente no próximo ciclo?\n5. Pontos positivos que devemos manter.`);
-
+  r.weeks.forEach(x => lines.push(`${x.budget && x.spent > x.budget ? '🔴' : '✅'} ${x.w.name}: R$ ${fmt(x.spent)}`));
+  if (r.extras) lines.push(`\n💼 Entradas extras no período: R$ ${fmt(r.extras)}`);
+  lines.push(`\n(Débitos/sobras transpostos entre semanas foram excluídos do gasto real.)`);
+  lines.push(`\n${'═'.repeat(40)}\n🤖 INSTRUÇÃO PARA O GEMINI\n${'═'.repeat(40)}`);
+  lines.push(`Analise este relatório do período dos gastos da família. Responda em português:\n1. Foi um mês responsável? Gastamos mais ou menos que o período anterior?\n2. Qual categoria mais pesou e por quê?\n3. Quais semanas fugiram do padrão?\n4. O que mudar no próximo mês?\n5. Pontos positivos a manter.`);
   document.getElementById('export-text').value = lines.join('\n');
+  document.getElementById('export-week-select').style.display = 'none';
   closeModal('modal-cycle-report');
   document.getElementById('modal-export').classList.remove('hidden');
 }
@@ -1195,21 +1211,32 @@ function copyExportText() {
 function openEditWeekModal() {
   const week = state.weeks.find(w => w.id === state.currentWeekId);
   if (!week) return;
-  document.getElementById('ew-cycle').value = week.cycle || '';
   document.getElementById('ew-name').value = week.name;
-  document.getElementById('ew-num').value = week.weekNum;
   document.getElementById('ew-start').value = week.startDate || '';
+  document.getElementById('ew-info').textContent = week.startDate ? 'Semana nº ' + yearWeekNumber(week.startDate) + ' de ' + week.startDate.slice(0,4) : '';
   document.getElementById('modal-edit-week').classList.remove('hidden');
 }
 
 function confirmEditWeek() {
   const week = state.weeks.find(w => w.id === state.currentWeekId);
   if (!week) return;
-  week.cycle = document.getElementById('ew-cycle').value || week.cycle || '';
-  week.name = document.getElementById('ew-name').value.trim() || week.name;
-  week.weekNum = parseInt(document.getElementById('ew-num').value);
-  const newStart = document.getElementById('ew-start').value;
-  if (newStart) week.startDate = newStart;
+  const rawStart = document.getElementById('ew-start').value;
+  const typedName = document.getElementById('ew-name').value.trim();
+  if (rawStart) {
+    const start = snapToFriday(rawStart);
+    if (start !== week.startDate) {
+      if (state.weeks.some(w => w.id !== week.id && w.startDate === start)) { alert('Já existe uma semana começando em '+fmtDM(start)+'.'); return; }
+      week.startDate = start;
+      week.endDate = addDaysISO(start,6);
+      week.weekNum = yearWeekNumber(start);
+      week.name = weekLabel(start);
+      monthFilterValue = monthKeyOf(start);
+    } else if (typedName) {
+      week.name = typedName;
+    }
+  } else if (typedName) {
+    week.name = typedName;
+  }
   save();
   closeModal('modal-edit-week');
   renderWeekSelect();
